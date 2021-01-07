@@ -6,7 +6,7 @@ export class Matrix {
   constructor(rows: number, columns: number) {
     this.data = [];
     for (let i = 0; i < rows; i++) {
-      this.data.push(new Array(columns));
+      this.data.push(new Array(columns).fill(0));
     }
   }
 
@@ -101,10 +101,12 @@ export class Matrix {
     throw new RangeError("MatrixIndexOutOfBounds");
   }
 
-  set(rowIndex: number, columnIndex: number, value: number): Matrix {
+  set(rowIndex: number, columnIndex: number, value: number, mirror: boolean = false): Matrix {
     if (this.checkRowIndex(rowIndex) && this.checkColumnIndex(columnIndex)) {
       this.data[rowIndex][columnIndex] = value;
-      return this;
+      return mirror
+        ? this.set(columnIndex, rowIndex, value, false)
+        : this;
     }
     throw new RangeError("MatrixIndexOutOfBounds");
   }
@@ -144,22 +146,27 @@ export class Matrix {
   }
 
   removeRow(rowIndex: number): Matrix {
-    if (this.checkRowIndex(rowIndex)) {
-      this.data.splice(rowIndex, 1);
-      return this;
-    } else {
-      throw new RangeError("MatrixIndexOutOfBounds");
-    }
+    if (!this.checkRowIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    this.data.splice(rowIndex, 1);
+    return this;
   }
 
-  removeColumn(columnIndex): Matrix {
-    if (this.checkColumnIndex(columnIndex)) {
-      for (let row of this.data) {
-        row.splice(columnIndex, 1);
-      }
-      return this;
+  removeLastRow(): Matrix {
+    return this.removeRow(this.rows - 1);
+  }
+
+  removeColumn(columnIndex: number): Matrix {
+    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    for (let row of this.data) {
+      row.splice(columnIndex, 1);
     }
-    throw new RangeError("MatrixIndexOutOfBounds");
+    return this;
+  }
+
+  removeLastColumn(): Matrix {
+    return this.removeColumn(this.columns - 1);
   }
 
   addRowAtIndex(rowIndex: number, value: number[] | number = 0): Matrix {
@@ -188,6 +195,14 @@ export class Matrix {
 
   addColumnAtEnd(value: number[] | number = 0): Matrix {
     return this.addColumnAtIndex(this.columns, value);
+  }
+
+  addRowAndColumnAtIndex(index: number, value: number[] | number = 0): Matrix {
+    return this.addRowAtIndex(index, value).addColumnAtIndex(index, value);
+  }
+
+  addRowAndColumnAtEnd(value: number[] | number = 0): Matrix {
+    return this.addRowAtEnd(value).addColumnAtEnd(value);
   }
 
   isSquare(): boolean {
@@ -252,5 +267,22 @@ export class Matrix {
   private copyData(arr: number[][]): Matrix {
     this.data = arr;
     return this;
+  }
+
+  private isEmptyColumn(columnIndex: number): boolean {
+    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    for (let i = 0; i < this.rows; i++) {
+      if (this.data[i][columnIndex] !== 0) return false;
+    }
+    return true;
+  }
+
+  private getEmptyColumns() {
+    let out = [];
+    for (let i = 0; i < this.columns; i++) {
+      if (this.isEmptyColumn(i)) out.push(i);
+    }
+    return out;
   }
 }
