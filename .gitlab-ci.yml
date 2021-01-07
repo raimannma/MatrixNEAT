@@ -1,0 +1,11 @@
+image: node:latest
+before_script:
+  - npm ci --also=dev
+
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - npm test
