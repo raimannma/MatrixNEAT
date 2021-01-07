@@ -24,3 +24,9 @@ export function MSE(arr1: number[], arr2: number[]): number {
   }
   return error / arr1.length;
 }
+
+export function pickRandom<T>(arr: T[]): T {
+  if (arr.length === 0) throw new RangeError("Can't pick from empty array.");
+
+  return arr[randInt([0, arr.length - 1])];
+}
