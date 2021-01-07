@@ -15,3 +15,12 @@ export function transposeArray(arr: number[][]): number[][] {
 export function isNumber(n: any) {
   return !isNaN(parseFloat(n)) && !isNaN(n - 0)
 }
+
+export function MSE(arr1: number[], arr2: number[]): number {
+  if (arr1.length !== arr2.length) throw new RangeError("Array dimensions doesn't match.");
+  let error = 0;
+  for (let i = 0; i < arr1.length; i++) {
+    error += Math.pow(arr1[i] - arr2[i], 2);
+  }
+  return error / arr1.length;
+}
