@@ -30,11 +30,11 @@ export class Matrix {
     return new Matrix(1, vector.length).map((_, row, column) => vector[column]);
   }
 
-  static zeros(rows: number, columns: number): Matrix {
+  static zeros(rows: number, columns: number = rows): Matrix {
     return new Matrix(rows, columns).fill(0);
   }
 
-  static ones(rows: number, columns: number): Matrix {
+  static ones(rows: number, columns: number = rows): Matrix {
     return new Matrix(rows, columns).fill(1);
   }
 
@@ -46,11 +46,11 @@ export class Matrix {
     return out;
   }
 
-  static randFloat(rows: number, columns: number, bounds: [number, number] = [0, 1]): Matrix {
+  static randFloat(rows: number, columns: number = rows, bounds: [number, number] = [0, 1]): Matrix {
     return new Matrix(rows, columns).map(_ => randFloat(bounds));
   }
 
-  static randInt(rows: number, columns: number, bounds: [number, number] = [-1, 1]): Matrix {
+  static randInt(rows: number, columns: number = rows, bounds: [number, number] = [-1, 1]): Matrix {
     return new Matrix(rows, columns).map(_ => randInt(bounds));
   }
 
