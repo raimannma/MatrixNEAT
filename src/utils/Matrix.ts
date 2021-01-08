@@ -127,6 +127,18 @@ export class Matrix {
     throw new TypeError("JSON String should represent 2d number array");
   }
 
+  static dotProduct(A: Matrix, B: Matrix): number {
+    if (!A.isColumnVector || !B.isColumnVector) throw new RangeError("Matrix has to be a column vector for dot multiplication");
+    if (A.rows !== B.rows) throw new RangeError("Sizes of both vectors needs to be equal");
+
+    const vector1 = A.getColumnArray(0);
+    const vector2 = B.getColumnArray(0);
+
+    let sum = 0;
+    for (let i = 0; i < A.rows; i++) sum += vector1[i] * vector2[i];
+    return sum;
+  }
+
   mul(other: Matrix | number): Matrix {
     // scalar multiplication
     if (isNumber(other)) return this.map(element => element * (other as number));
@@ -312,6 +324,18 @@ export class Matrix {
       out.push(this.data[i][columnIndex]);
     }
     return out;
+  }
+
+  getColumnVector(columnIndex: number): Matrix {
+    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    return Matrix.fromVerticalVector(this.getColumnArray(columnIndex));
+  }
+
+  getRow(rowIndex: number): number[] {
+    if (!this.checkColumnIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    return [...this.data[rowIndex]];
   }
 
   private copyData(arr: number[][]): Matrix {
