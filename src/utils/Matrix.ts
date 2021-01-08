@@ -55,26 +55,6 @@ export class Matrix {
     return JSON.stringify(this.data);
   }
 
-  get topologicalSort(): number[] {
-    const copy = this.copy;
-    const sortedList = [];
-    const nodeWithoutIncoming = copy.emptyColumns;
-
-    while (nodeWithoutIncoming.length !== 0) {
-      let fromNode = nodeWithoutIncoming.splice(0, 1)[0]; // remove first node without incoming edges
-      sortedList.push(fromNode); // add it to the sorted list
-
-      for (let toNode = 0; toNode < copy.data[fromNode].length; toNode++) {
-        if (copy.data[fromNode][toNode] === 0) continue;
-
-        copy.data[fromNode][toNode] = 0;
-        if (copy.isEmptyColumn(toNode)) nodeWithoutIncoming.push(toNode);
-      }
-    }
-    if (copy.emptyColumns.length !== copy.columns) throw new ReferenceError("There is a cycle in the matrix.");
-    return sortedList;
-  }
-
   get emptyColumns() {
     let out = [];
     for (let i = 0; i < this.columns; i++) {
@@ -137,6 +117,26 @@ export class Matrix {
     let sum = 0;
     for (let i = 0; i < A.rows; i++) sum += vector1[i] * vector2[i];
     return sum;
+  }
+
+  getTopologicalSort(): number[] {
+    const copy = this.copy;
+    const sortedList = [];
+    const nodeWithoutIncoming = copy.emptyColumns;
+
+    while (nodeWithoutIncoming.length !== 0) {
+      let fromNode = nodeWithoutIncoming.splice(0, 1)[0]; // remove first node without incoming edges
+      sortedList.push(fromNode); // add it to the sorted list
+
+      for (let toNode = 0; toNode < copy.data[fromNode].length; toNode++) {
+        if (copy.data[fromNode][toNode] === 0) continue;
+
+        copy.data[fromNode][toNode] = 0;
+        if (copy.isEmptyColumn(toNode)) nodeWithoutIncoming.push(toNode);
+      }
+    }
+    if (copy.emptyColumns.length !== copy.columns) throw new ReferenceError("There is a cycle in the matrix.");
+    return sortedList;
   }
 
   mul(other: Matrix | number): Matrix {
@@ -266,10 +266,6 @@ export class Matrix {
     return this.addColumnAtIndex(this.columns, value);
   }
 
-  addRowAndColumnAtIndex(index: number, value: number[] | number = 0): Matrix {
-    return this.addRowAtIndex(index, value).addColumnAtIndex(index, value);
-  }
-
   addRowAndColumnAtEnd(value: number[] | number = 0): Matrix {
     return this.addRowAtEnd(value).addColumnAtEnd(value);
   }
@@ -288,18 +284,6 @@ export class Matrix {
       for (let j = 0; j < this.columns; j++) {
         callback(this.get(i, j), i, j, this);
       }
-    }
-  }
-
-  forEachRow(callback: (element: number[], row: number, matrix: Matrix) => void) {
-    for (let i = 0; i < this.rows; i++) {
-      callback(this.getRow(i), i, this);
-    }
-  }
-
-  forEachColumn(callback: (element: number[], columns: number, matrix: Matrix) => void) {
-    for (let i = 0; i < this.columns; i++) {
-      callback(this.getColumnArray(i), i, this);
     }
   }
 
@@ -338,17 +322,27 @@ export class Matrix {
     return [...this.data[rowIndex]];
   }
 
-  private copyData(arr: number[][]): Matrix {
-    this.data = arr;
-    return this;
-  }
-
-  private isEmptyColumn(columnIndex: number): boolean {
+  isEmptyColumn(columnIndex: number): boolean {
     if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
 
     for (let i = 0; i < this.rows; i++) {
       if (this.data[i][columnIndex] !== 0) return false;
     }
     return true;
+  }
+
+  setRow(rowIndex: number, value: number | number[] = 0) {
+    if (!this.checkRowIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (Array.isArray(value)) {
+      if (value.length !== this.columns) throw new RangeError("MatrixIndexOutOfBounds");
+      this.data[rowIndex] = value
+    } else {
+      this.data[rowIndex] = new Array(this.columns).fill(value);
+    }
+  }
+
+  private copyData(arr: number[][]): Matrix {
+    this.data = arr;
+    return this;
   }
 }

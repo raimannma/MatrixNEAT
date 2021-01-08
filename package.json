@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lcov": "npm run test && nyc report --reporter lcov",
     "test": "nyc --reporter text mocha --require ts-node/register test/**/*.ts test/*.ts"
   },
   "keywords": [],
