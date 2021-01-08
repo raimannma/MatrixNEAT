@@ -78,7 +78,7 @@ export class Network {
   forward(inputs: number[]) {
     if (inputs.length !== this.numInputs) throw new RangeError("Input dimensions doesn't match net dimensions.");
 
-    const orderOfActivation = this.adjacency.topologicalSort;
+    const orderOfActivation = this.adjacency.getTopologicalSort();
     this.nodes.addColumnAtEnd(); // prepare for output values of each node
 
     // Set inputs
@@ -127,7 +127,7 @@ export class Network {
   }
 
   mutateAddConnection(): void {
-    let sortedNodes = this.adjacency.topologicalSort;
+    let sortedNodes = this.adjacency.getTopologicalSort();
 
     let possible = [];
     // Get all possible node pairs that don't have a connection and are forward pointing

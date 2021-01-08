@@ -166,4 +166,126 @@ describe("Matrix Test", () => {
       }
     });
   });
+  describe("topological sorting", () => {
+    it("topological sorting cycle graph", () => {
+      const graph = new Matrix(4, 4);
+      graph.set(0, 1, 1);
+      graph.set(0, 2, 1);
+      graph.set(2, 1, 1);
+      graph.set(2, 3, 1);
+      graph.set(3, 2, 1);
+      expect(graph.getTopologicalSort).to.throw
+    });
+    it("topological sort non cycle graph", () => {
+      const graph = new Matrix(6, 6);
+      graph.set(0, 1, 1);
+      graph.set(1, 2, 1);
+      graph.set(1, 3, 1);
+      graph.set(2, 4, 1);
+      graph.set(2, 5, 1);
+      graph.set(4, 5, 1);
+      graph.set(5, 3, 1);
+
+      const sort = graph.getTopologicalSort();
+      for (let node of sort) {
+        expect(graph.isEmptyColumn(node)).to.be.true;
+        graph.setRow(node, 0);
+      }
+
+      const graph2 = new Matrix(7, 7);
+      graph2.set(0, 1, 1);
+      graph2.set(1, 2, 1);
+      graph2.set(1, 3, 1);
+      graph2.set(1, 4, 1);
+      graph2.set(2, 3, 1);
+      graph2.set(2, 4, 1);
+      graph2.set(3, 4, 1);
+      graph2.set(4, 5, 1);
+      graph2.set(6, 3, 1);
+
+      const sort2 = graph2.getTopologicalSort();
+      for (let node of sort2) {
+        expect(graph2.isEmptyColumn(node)).to.be.true;
+        graph2.setRow(node, 0);
+      }
+    });
+  });
+  describe("get row", () => {
+    it("get row random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let [a, b, c, d, e, f, g, h, i] = [
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1])
+        ];
+
+        const matrix = Matrix.from2dArray([
+          [a, b, c],
+          [d, e, f],
+          [g, h, i],
+        ]);
+        expect(matrix.getRow(0)).to.be.eql([a, b, c]);
+        expect(matrix.getRow(1)).to.be.eql([d, e, f]);
+        expect(matrix.getRow(2)).to.be.eql([g, h, i]);
+      }
+    });
+  });
+  describe("get column array", () => {
+    it("get column array random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let [a, b, c, d, e, f, g, h, i] = [
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1])
+        ];
+
+        const matrix = Matrix.from2dArray([
+          [a, b, c],
+          [d, e, f],
+          [g, h, i],
+        ]);
+        expect(matrix.getColumnArray(0)).to.be.eql([a, d, g]);
+        expect(matrix.getColumnArray(1)).to.be.eql([b, e, h]);
+        expect(matrix.getColumnArray(2)).to.be.eql([c, f, i]);
+      }
+    });
+  });
+  describe("get column vector", () => {
+    it("get column vector random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let [a, b, c, d, e, f, g, h, i] = [
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1]),
+          randFloat([-1, 1])
+        ];
+
+        const matrix = Matrix.from2dArray([
+          [a, b, c],
+          [d, e, f],
+          [g, h, i],
+        ]);
+        expect(matrix.getColumnVector(0)).to.be.eql(Matrix.from2dArray([[a], [d], [g]]));
+        expect(matrix.getColumnVector(1)).to.be.eql(Matrix.from2dArray([[b], [e], [h]]));
+        expect(matrix.getColumnVector(2)).to.be.eql(Matrix.from2dArray([[c], [f], [i]]));
+      }
+    });
+  });
 });
