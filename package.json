@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/**/*.ts test/*.ts"
+    "test": "nyc --reporter text mocha --require ts-node/register test/**/*.ts test/*.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +17,8 @@
     "mocha": "^8.2.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
+  },
+  "devDependencies": {
+    "nyc": "^15.1.0"
   }
 }
