@@ -22,6 +22,67 @@ export class Matrix {
     return this.rows !== 0 ? this.data[0].length : 0;
   }
 
+  get copy(): Matrix {
+    return Matrix.from2dArray(this.to2DArray());
+  }
+
+  get isSquare(): boolean {
+    return this.data.length !== 0 ? this.data.length === this.data[0].length : true;
+  }
+
+  get isSymmetric(): boolean {
+    if (!this.isSquare) return false;
+
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j <= i; j++) {
+        if (this.get(i, j) !== this.get(j, i)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  get isRowVector(): boolean {
+    return this.rows === 1;
+  }
+
+  get isColumnVector(): boolean {
+    return this.columns === 1;
+  }
+
+  get jsonString(): string {
+    return JSON.stringify(this.data);
+  }
+
+  get topologicalSort(): number[] {
+    const copy = this.copy;
+    const sortedList = [];
+    const nodeWithoutIncoming = copy.emptyColumns;
+
+    while (nodeWithoutIncoming.length !== 0) {
+      let fromNode = nodeWithoutIncoming.splice(0, 1)[0]; // remove first node without incoming edges
+      sortedList.push(fromNode); // add it to the sorted list
+
+      for (let toNode = 0; toNode < copy.data[fromNode].length; toNode++) {
+        if (copy.data[fromNode][toNode] === 0) continue;
+
+        copy.data[fromNode][toNode] = 0;
+        if (copy.isEmptyColumn(toNode)) nodeWithoutIncoming.push(toNode);
+      }
+    }
+    if (copy.emptyColumns.length !== copy.columns) throw new ReferenceError("There is a cycle in the matrix.");
+    return sortedList;
+  }
+
+  get emptyColumns() {
+    let out = [];
+    for (let i = 0; i < this.columns; i++) {
+      if (this.isEmptyColumn(i)) out.push(i);
+    }
+    return out;
+  }
+
   static fromVerticalVector(vector: number[]) {
     return new Matrix(vector.length, 1).map((_, row) => vector[row]);
   }
@@ -123,10 +184,6 @@ export class Matrix {
     return this.data.map(row => [...row]);
   }
 
-  copy(): Matrix {
-    return Matrix.from2dArray(this.to2DArray());
-  }
-
   transpose(): Matrix {
     this.data = transposeArray(this.to2DArray());
     return this;
@@ -205,23 +262,6 @@ export class Matrix {
     return this.addRowAtEnd(value).addColumnAtEnd(value);
   }
 
-  isSquare(): boolean {
-    return this.data.length !== 0 ? this.data.length === this.data[0].length : true;
-  }
-
-  isSymmetric(): boolean {
-    if (!this.isSquare()) return false;
-
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j <= i; j++) {
-        if (this.get(i, j) !== this.get(j, i)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
   map(callback: (element: number, row: number, column: number, matrix: Matrix) => number): Matrix {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
@@ -239,6 +279,18 @@ export class Matrix {
     }
   }
 
+  forEachRow(callback: (element: number[], row: number, matrix: Matrix) => void) {
+    for (let i = 0; i < this.rows; i++) {
+      callback(this.getRow(i), i, this);
+    }
+  }
+
+  forEachColumn(callback: (element: number[], columns: number, matrix: Matrix) => void) {
+    for (let i = 0; i < this.columns; i++) {
+      callback(this.getColumnArray(i), i, this);
+    }
+  }
+
   equals(other: Matrix): boolean {
     if (this.rows !== other.rows || this.columns !== other.columns) return false;
 
@@ -252,43 +304,11 @@ export class Matrix {
     return true;
   }
 
-  isRowVector(): boolean {
-    return this.rows === 1;
-  }
-
-  isColumnVector(): boolean {
-    return this.columns === 1;
-  }
-
-  toJsonString(): string {
-    return JSON.stringify(this.data);
-  }
-
-  topologicalSort(): number[] {
-    const copy = this.copy();
-    const sortedList = [];
-    const nodeWithoutIncoming = copy.getEmptyColumns();
-
-    while (nodeWithoutIncoming.length !== 0) {
-      let fromNode = nodeWithoutIncoming.splice(0, 1)[0]; // remove first node without incoming edges
-      sortedList.push(fromNode); // add it to the sorted list
-
-      for (let toNode = 0; toNode < copy.data[fromNode].length; toNode++) {
-        if (copy.data[fromNode][toNode] === 0) continue;
-
-        copy.data[fromNode][toNode] = 0;
-        if (copy.isEmptyColumn(toNode)) nodeWithoutIncoming.push(toNode);
-      }
-    }
-    if (copy.getEmptyColumns().length !== copy.columns) throw new ReferenceError("There is a cycle in the matrix.");
-    return sortedList;
-  }
-
-  getColumn(columnIndex: number): number[] {
+  getColumnArray(columnIndex: number): number[] {
     if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
 
     const out = [];
-    for (let i = 0; i < this.columns; i++) {
+    for (let i = 0; i < this.rows; i++) {
       out.push(this.data[i][columnIndex]);
     }
     return out;
@@ -306,13 +326,5 @@ export class Matrix {
       if (this.data[i][columnIndex] !== 0) return false;
     }
     return true;
-  }
-
-  private getEmptyColumns() {
-    let out = [];
-    for (let i = 0; i < this.columns; i++) {
-      if (this.isEmptyColumn(i)) out.push(i);
-    }
-    return out;
   }
 }
