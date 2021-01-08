@@ -23,21 +23,15 @@ export class Population {
       this.networks.push(new Network(this.networks[0].numInputs, this.networks[0].numOutputs))
     }
 
-    this.mutate();
+    for (let i = this.elitists; i < this.networks.length; i++) {
+      this.networks[i].mutate();
+    }
 
     this.networks.splice(this.networks.length - 1, 1);
     this.networks.splice(0, 0, bestNetwork);
 
     bestNetwork.evaluate(inputs, targets);
     return bestNetwork.fitness;
-  }
-
-  mutate() {
-    this.networks.forEach(network => {
-      if (Math.random() <= 0.7) network.mutateAddNode();
-      if (Math.random() <= 0.4) network.mutateAddConnection();
-      if (Math.random() <= 0.4) network.mutateModWeight();
-    });
   }
 
   evaluateFitness(inputs: number[][], targets: number[][]) {
