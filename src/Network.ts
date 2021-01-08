@@ -1,6 +1,6 @@
 import {Matrix} from "./utils/Matrix";
 import {MSE, pickRandom, randFloat} from "./utils/Utils";
-import {TANH} from "activations";
+import {ActivationType, TANH} from "activations";
 
 export class Network {
   /**
@@ -17,12 +17,17 @@ export class Network {
   stagnation: number;
   readonly numInputs: number;
   readonly numOutputs: number;
+  readonly activation: ActivationType;
 
-  constructor(numInputs: number, numOutputs: number, randomBias: boolean = false) {
+  constructor(numInputs: number, numOutputs: number, options: { randomBias: boolean, activation: ActivationType } = {
+    randomBias: false,
+    activation: TANH
+  }) {
     this.numInputs = numInputs;
     this.numOutputs = numOutputs
     this.fitness = -Infinity;
     this.stagnation = 0;
+    this.activation = options.activation;
 
     // Create adjacency matrix
     this.adjacency = Matrix.zeros(this.numInputs + this.numOutputs);
@@ -30,8 +35,24 @@ export class Network {
     // Create bias matrix (vector)
     let biases = [];
     for (let i = 0; i < numInputs; i++) biases.push(0);
-    for (let i = 0; i < numOutputs; i++) biases.push(randomBias ? randFloat([-1, 1]) : 1);
+    for (let i = 0; i < numOutputs; i++) biases.push(options.randomBias ? randFloat([-1, 1]) : 1);
     this.nodes = Matrix.fromVerticalVector(biases);
+  }
+
+  get connections(): [number, number][] {
+    let connections = [];
+    this.adjacency.forEach(((element, row, column) => {
+      if (element !== 0) connections.push([row, column]);
+    }));
+    return connections;
+  }
+
+  get copy(): Network {
+    return Network.fromJsonString(this.jsonString);
+  }
+
+  get jsonString(): string {
+    return JSON.stringify([this.numInputs, this.numOutputs, this.adjacency.jsonString, this.nodes.jsonString])
   }
 
   static fromJsonString(json: string): Network {
@@ -57,13 +78,11 @@ export class Network {
   forward(inputs: number[]) {
     if (inputs.length !== this.numInputs) throw new RangeError("Input dimensions doesn't match net dimensions.");
 
-    const orderOfActivation = this.adjacency.topologicalSort();
+    const orderOfActivation = this.adjacency.topologicalSort;
     this.nodes.addColumnAtEnd(); // prepare for output values of each node
 
     // Set inputs
-    for (let i = 0; i < this.numInputs; i++) {
-      this.nodes.set(i, 1, inputs[i]);
-    }
+    for (let i = 0; i < this.numInputs; i++) this.nodes.set(i, 1, inputs[i]);
 
     // propagate
     for (let i = 0; i < orderOfActivation.length; i++) {
@@ -72,18 +91,17 @@ export class Network {
 
       // Propagate
 
-      // Sum up input * weights
-      let result = 0;
-      let column = this.adjacency.getColumn(node);
-      for (let i = 0; i < column.length; i++) {
-        result += column[i] * this.nodes.get(i, 1);
-      }
+      // Sum up input[i] * weights[i]
+      let weights = this.adjacency.getColumnVector(node)
+      let inputs = this.nodes.getColumnVector(1);
+
+      let result = Matrix.dotProduct(weights, inputs);
 
       // Add Bias
       result += this.nodes.get(node, 0);
 
       // Apply activation function
-      result = TANH(result);
+      result = this.activation(result);
 
       // Store result
       this.nodes.set(node, 1, result);
@@ -102,19 +120,14 @@ export class Network {
   }
 
   mutateModWeight(): void {
-    const possible = [];
-    this.adjacency.forEach((element, row, column) => {
-      if (element !== 0) possible.push([row, column])
-    });
+    if (this.connections.length === 0) return;
 
-    if (possible.length === 0) return;
-
-    const randomConnection = pickRandom(possible);
+    const randomConnection = pickRandom(this.connections);
     this.adjacency.set(randomConnection[0], randomConnection[1], randFloat([-1, 1]))
   }
 
   mutateAddConnection(): void {
-    let sortedNodes = this.adjacency.topologicalSort();
+    let sortedNodes = this.adjacency.topologicalSort;
 
     let possible = [];
     // Get all possible node pairs that don't have a connection and are forward pointing
@@ -133,10 +146,7 @@ export class Network {
   }
 
   mutateAddNode(): void {
-    const possible = [];
-    this.adjacency.forEach((element, row, column) => {
-      if (element !== 0) possible.push([row, column])
-    });
+    const possible = this.connections
 
     if (possible.length === 0) return;
 
@@ -152,16 +162,16 @@ export class Network {
       error -= loss(this.forward(inputs[i]), targets[i]);
     }
     error /= inputs.length;
+
     if (error <= this.fitness) this.stagnation++;
     else this.stagnation = 0;
-    this.fitness = error
+
+    this.fitness = error;
   }
 
-  copy(): Network {
-    return Network.fromJsonString(this.toJsonString());
-  }
-
-  toJsonString(): string {
-    return JSON.stringify([this.numInputs, this.numOutputs, this.adjacency.toJsonString(), this.nodes.toJsonString()])
+  mutate() {
+    if (Math.random() <= 0.6) this.mutateAddNode();
+    if (Math.random() <= 0.4) this.mutateAddConnection();
+    if (Math.random() <= 0.6) this.mutateModWeight();
   }
 }
