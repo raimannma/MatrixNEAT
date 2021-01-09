@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {isNumber, MSE, pickRandom, randInt} from "../../../src/utils/Utils";
-import {Matrix} from "../../../src/utils/Matrix";
+import {isNumber, MSE, pickRandom, randInt} from "../../src/utils/Utils";
+import {Matrix} from "../../src/utils/Matrix";
 
 describe("UtilsTest", () => {
   describe("MSE", () => {

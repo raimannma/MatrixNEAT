@@ -1,6 +1,6 @@
 import {describe, it} from "mocha"
-import {Matrix} from "../../../src/utils/Matrix";
-import {randFloat, randInt} from "../../../src/utils/Utils";
+import {Matrix} from "../../src/utils/Matrix";
+import {randFloat, randInt} from "../../src/utils/Utils";
 import {expect} from "chai";
 
 describe("Matrix Test", () => {
