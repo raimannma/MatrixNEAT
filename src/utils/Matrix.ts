@@ -163,25 +163,19 @@ export class Matrix {
     return this;
   }
 
-  negate(): Matrix {
-    return this.mul(-1);
-  }
-
   get(rowIndex: number, columnIndex: number): number {
-    if (this.checkRowIndex(rowIndex) && this.checkColumnIndex(columnIndex)) {
-      return this.data[rowIndex][columnIndex];
-    }
-    throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkRowIndex(rowIndex) || !this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    return this.data[rowIndex][columnIndex];
   }
 
   set(rowIndex: number, columnIndex: number, value: number, mirror: boolean = false): Matrix {
-    if (this.checkRowIndex(rowIndex) && this.checkColumnIndex(columnIndex)) {
-      this.data[rowIndex][columnIndex] = value;
-      return mirror
-        ? this.set(columnIndex, rowIndex, value, false)
-        : this;
-    }
-    throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkRowIndex(rowIndex) || !this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+
+    this.data[rowIndex][columnIndex] = value;
+    return mirror
+      ? this.set(columnIndex, rowIndex, value, false)
+      : this;
   }
 
   checkRowIndex(index: number): boolean {

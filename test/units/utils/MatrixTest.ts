@@ -1,6 +1,6 @@
 import {describe, it} from "mocha"
-import {Matrix} from "../../src/utils/Matrix";
-import {randFloat, randInt} from "../../src/utils/Utils";
+import {Matrix} from "../../../src/utils/Matrix";
+import {randFloat, randInt} from "../../../src/utils/Utils";
 import {expect} from "chai";
 
 describe("Matrix Test", () => {
@@ -104,6 +104,83 @@ describe("Matrix Test", () => {
       }
     });
   });
+
+  describe("matrix get", () => {
+    it("get outside of matrix random tests", () => {
+      for (let k = 0; k < 1000; k++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+
+        expect(A.get.bind(-1, -1)).to.throw;
+        expect(A.get.bind(-1, 0)).to.throw;
+        expect(A.get.bind(0, -1)).to.throw;
+        expect(A.get.bind(i, j)).to.throw;
+        expect(A.get.bind(i, 0)).to.throw;
+        expect(A.get.bind(0, j)).to.throw;
+      }
+    });
+    it("get value in matrix random tests", () => {
+      for (let k = 0; k < 1000; k++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+
+        for (let h = 0; h < 10; h++) {
+          let [rowIndex, columnIndex] = [randInt([0, i - 1]), randInt([0, j - 1])];
+          let value = randFloat([-1, 1]);
+          A.set(rowIndex, columnIndex, value);
+          expect(A.get(rowIndex, columnIndex)).to.be.equals(value);
+        }
+      }
+    });
+  });
+
+  describe("matrix set", () => {
+    it("set outside of matrix random tests", () => {
+      for (let k = 0; k < 1000; k++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+
+        expect(A.set.bind(-1, -1, 0, false)).to.throw;
+        expect(A.set.bind(-1, 0, 0, false)).to.throw;
+        expect(A.set.bind(0, -1, 0, false)).to.throw;
+        expect(A.set.bind(i, j, 0, false)).to.throw;
+        expect(A.set.bind(i, 0, 0, false)).to.throw;
+        expect(A.set.bind(0, j, 0, false)).to.throw;
+      }
+    });
+    it("set value in matrix random tests", () => {
+      for (let k = 0; k < 1000; k++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-1, 1]);
+
+        A.set(0, 0, -8000, false);
+        A.forEach(((element, row, column) => {
+          if (row === 0 && column === 0) expect(element).to.be.equals(-8000)
+          else {
+            expect(element).to.be.at.most(1);
+            expect(element).to.be.at.least(-1);
+          }
+        }));
+      }
+    });
+    it("mirror values in set matrix random tests", () => {
+      for (let k = 0; k < 1000; k++) {
+        let i = randInt([5, 6]);
+        const A = Matrix.zeros(i);
+
+        for (let h = 0; h < 100; h++) {
+          A.set(randInt([0, i - 1]), randInt([0, i - 1]), randFloat([-9, 9]), true);
+        }
+
+        expect(A.isSymmetric).to.be.true
+      }
+    });
+  });
+
   describe("scalar matrix multiplication", () => {
     it("scalar matrix multiplication test", () => {
       const A = Matrix.randFloat(4, 7);

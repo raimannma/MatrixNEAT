@@ -1,8 +1,8 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {Population} from "../src/Population";
+import {Population} from "../../src/Population";
 
-describe("PopulationTest", () => {
+describe("LogicGatesTest", () => {
 
   const data = {
     AND: {
