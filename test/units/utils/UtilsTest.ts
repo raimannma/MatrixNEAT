@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {isNumber, MSE, pickRandom} from "../../src/utils/Utils";
-import {Matrix} from "../../src/utils/Matrix";
+import {isNumber, MSE, pickRandom, randInt} from "../../../src/utils/Utils";
+import {Matrix} from "../../../src/utils/Matrix";
 
 describe("UtilsTest", () => {
   describe("MSE", () => {
@@ -17,6 +17,17 @@ describe("UtilsTest", () => {
       expect(MSE(a, b)).to.be.equal(0.5);
       a = [1, 1];
       expect(MSE(a, b)).to.be.equal(1);
+    });
+  });
+
+  describe("rand integer", () => {
+    it("random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let rand = randInt([-10, 10]);
+        expect(rand).to.be.at.most(10);
+        expect(rand).to.be.at.least(-10);
+        expect(Number.isInteger(rand)).to.be.true;
+      }
     });
   });
 
