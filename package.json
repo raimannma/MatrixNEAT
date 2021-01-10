@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lcov": "npm run test && nyc report --reporter lcov",
+    "cobertura-coverage": "nyc report --reporter cobertura",
+    "lcov-coverage": "nyc report --reporter lcov",
+    "html-coverage": "nyc report --reporter html",
     "test": "nyc --reporter text mocha --require ts-node/register test/**/*.ts test/*.ts"
   },
   "keywords": [],

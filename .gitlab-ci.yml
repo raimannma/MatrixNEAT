@@ -4,8 +4,30 @@ before_script:
 
 stages:
   - test
+  - deploy
 
 test:
   stage: test
   script:
     - npm test
+  artifacts:
+    paths:
+      - .nyc_output
+    expire_in: 1 day
+
+coverage:
+  stage: deploy
+  needs:
+    - test
+  script:
+    - npm i -g @dvcorg/cml
+    - npm run cobertura-coverage
+    - npm run html-coverage
+    - echo "### [Coverage Report](https://my_neat.gitlab.io/-/matrix-neat/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html)" >> report.md
+    - cml-send-comment report.md
+  artifacts:
+    reports:
+      cobertura: coverage/cobertura-coverage.xml
+    paths:
+      - coverage
+    expire_in: 30 days
