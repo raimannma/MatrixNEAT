@@ -3,6 +3,7 @@ import { fastIsNaN, pickRandom, randFloat } from "./utils/Utils";
 import { ActivationType, Identitiy } from "activations";
 import { MSELoss } from "./utils/Loss";
 import { Logger } from "sitka";
+import { Population } from "./Population";
 
 export class Network {
   private readonly logger: Logger = Logger.getLogger({
@@ -17,6 +18,8 @@ export class Network {
   readonly numInputs: number;
   readonly numOutputs: number;
   readonly activation: ActivationType;
+  population: Population;
+  _connections: Matrix;
   readonly options: NetworkOptions;
 
   constructor(options: NetworkOptions) {
@@ -29,16 +32,35 @@ export class Network {
     this.fitness = -Infinity;
     this.stagnation = 0;
     this.activation = this.options.activation;
+    this.population = this.options.population;
 
     // Create adjacency matrix
     this.adjacency = new Matrix(this.numInputs + this.numOutputs);
 
     // Create bias matrix (vector)
-    const biases = [];
-    for (let i = 0; i < this.numInputs; i++) biases.push(0);
-    for (let i = 0; i < this.numOutputs; i++)
-      biases.push(this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
-    this.nodes = Matrix.fromVerticalVector(biases);
+    const nodes = [];
+    for (let i = 0; i < this.numInputs; i++) {
+      if (this.population) {
+        nodes.push([0, i]);
+        Object.assign(this.population.nodeIDs, { [-i - 1]: i });
+      } else nodes.push([0]);
+    }
+    for (let i = 0; i < this.numOutputs; i++) {
+      if (this.population) {
+        nodes.push([
+          this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1,
+          i + this.numInputs,
+        ]);
+        Object.assign(this.population.nodeIDs, {
+          [-i - this.numInputs - 1]: i + this.numInputs,
+        });
+      } else
+        nodes.push([
+          this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1,
+        ]);
+    }
+    this.nodes = Matrix.from2dArray(nodes);
+    this._connections = Matrix.empty;
     this.logger.debug(
       `Created network with input size ${this.numInputs} and output size ${this.numOutputs}.`
     );
@@ -75,6 +97,7 @@ export class Network {
       options: this.options,
       adjacency: this.adjacency.json,
       nodes: this.nodes.json,
+      connections: this._connections.json,
     };
   }
 
@@ -82,24 +105,69 @@ export class Network {
     const out = new Network(jsonNetwork.options);
     out.adjacency = Matrix.fromJson(jsonNetwork.adjacency);
     out.nodes = Matrix.fromJson(jsonNetwork.nodes);
+    out._connections = Matrix.fromJson(jsonNetwork.connections);
     return out;
   }
 
-  addNode(randomBias = false): number {
-    this.nodes.addRowAtEnd(randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
+  addNode(index1: number, index2: number, bias = 1) {
+    // Create new node
+    const newNodeIndex = this.nodes.rows;
+    // If working on population level, set ID for new node
+    if (this.population) {
+      const [fromID, toID] = [this.indexToID(index1), this.indexToID(index2)];
+      const newNodeID = this.population.getNodeID(fromID, toID);
+      this.nodes.addRowAtEnd([bias, newNodeID]);
+    } else {
+      this.nodes.addRowAtEnd([bias]);
+    }
     this.adjacency.addRowAndColumnAtEnd();
-    return this.adjacency.rows - 1;
+
+    // Remove previous connection
+    const weight = this.adjacency.get(index1, index2);
+    this.disableConnection(index1, index2);
+    // Add connection from index1 to new node with weight 1
+    this.addConnection(index1, newNodeIndex, 1);
+    // Add connection from new node to index2 with weight of previous connection
+    this.addConnection(newNodeIndex, index2, weight);
   }
 
   addConnection(
-    index1: number,
-    index2: number,
-    weight: number = randFloat(Network.WEIGHT_BOUNDS)
+    fromIndex: number,
+    toIndex: number,
+    weight: number = randFloat([-1, 1])
   ) {
-    if (index2 < this.numInputs)
+    if (this.isOutputNode(fromIndex))
+      throw new ReferenceError("Can't connect from output node!");
+    if (this.isInputNode(toIndex))
       throw new ReferenceError("Can't connect to input node!");
+    if (!fastIsNaN(this.adjacency.get(fromIndex, toIndex)))
+      throw new ReferenceError(
+        "Can't connect when there is already a connection!"
+      );
 
-    this.adjacency.set(index1, index2, weight);
+    // If working on population level, set ID for new connection
+    if (this.population) {
+      const newConnID = this.population.getConnID(
+        this.indexToID(fromIndex),
+        this.indexToID(toIndex)
+      );
+
+      // search for a disabled connection with same id
+      let isADisabledConn = false;
+      if (this._connections.columns >= 2) {
+        const connIndex = this._connections
+          .getColumnArray(0)
+          .indexOf(newConnID);
+        if (connIndex !== -1) {
+          this._connections.set(connIndex, 1, 1); // enable old connection again
+          isADisabledConn = true;
+        }
+      }
+
+      if (!isADisabledConn) this._connections.addRowAtEnd([newConnID, 1]);
+    }
+
+    this.adjacency.set(fromIndex, toIndex, weight);
   }
 
   forward(inputs: number[]) {
@@ -193,18 +261,25 @@ export class Network {
 
   mutateAddNode(): void {
     this.logger.debug("Mutating add node...");
-    const possible = this.connections;
+    const possible = !this.population
+      ? this.connections
+      : this.connections.filter((conn) => {
+          const [fromID, toID] = [
+            this.indexToID(conn[0]),
+            this.indexToID(conn[1]),
+          ];
+          if (!this.population.hasNodeID(fromID, toID)) return true;
+
+          // Prevent parallel paths TODO: Find another method for this
+          return !this.nodes
+            .getColumnArray(1)
+            .includes(this.population.getNodeID(fromID, toID));
+        });
 
     if (possible.length === 0) return;
 
     const randomConnection = pickRandom(possible);
-    const newNode = this.addNode();
-    this.addConnection(randomConnection[0], newNode, 1);
-    this.addConnection(
-      newNode,
-      randomConnection[1],
-      this.adjacency.get(randomConnection[0], randomConnection[1])
-    );
+    this.addNode(randomConnection[0], randomConnection[1]);
   }
 
   evaluate(
@@ -249,8 +324,36 @@ export class Network {
     return this.numInputs <= index && index < this.numInputs + this.numOutputs;
   }
 
+  private indexToID(index: number) {
+    return this.nodes.get(index, 1);
+  }
+
   private getWeight(fromIndex: number, toIndex: number): number {
     return this.adjacency.get(fromIndex, toIndex);
+  }
+
+  disableConnection(index1: number, index2: number) {
+    if (this.population) {
+      const connID = this.population.getConnID(
+        this.indexToID(index1),
+        this.indexToID(index2)
+      );
+      const connIndex = this._connections.getColumnArray(0).indexOf(connID);
+      this._connections.set(connIndex, 1, 0); // disable connection
+    }
+    this.adjacency.set(index1, index2, NaN); // Set weight to NaN
+  }
+
+  isDisabled(index1: number, index2: number): boolean {
+    if (this.population) {
+      const connID = this.population.getConnID(
+        this.indexToID(index1),
+        this.indexToID(index2)
+      );
+      const connIndex = this._connections.getColumnArray(0).indexOf(connID);
+      return this._connections.get(connIndex, 1) === 0;
+    }
+    return false;
   }
 }
 
@@ -258,6 +361,7 @@ export interface NetworkJSON {
   options: NetworkOptions;
   adjacency: MatrixJSON;
   nodes: MatrixJSON;
+  connections: MatrixJSON;
 }
 
 export interface NetworkOptions {
@@ -265,6 +369,7 @@ export interface NetworkOptions {
   outputSize: number;
   randomBias?: boolean;
   activation?: ActivationType;
+  population?: Population;
 }
 
 const DefaultNetworkOptions: Partial<NetworkOptions> = {
