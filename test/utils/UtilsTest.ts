@@ -1,9 +1,54 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {isNumber, MSE, pickRandom, randInt} from "../../src/utils/Utils";
+import {isNumber, MSE, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
 import {Matrix} from "../../src/utils/Matrix";
 
 describe("UtilsTest", () => {
+  describe("rand float", () => {
+    it("random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let rand = randFloat([-10, 10]);
+        expect(isNumber(rand)).to.be.true;
+        expect(rand).to.be.at.most(10);
+        expect(rand).to.be.at.least(-10);
+      }
+    });
+  });
+
+  describe("rand integer", () => {
+    it("random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let rand = randInt([-10, 10]);
+        expect(rand).to.be.at.most(10);
+        expect(rand).to.be.at.least(-10);
+        expect(Number.isInteger(rand)).to.be.true;
+      }
+    });
+  });
+
+  describe("transpose array", () => {
+    it("transpose 2d arr", () => {
+      const arr = [
+        [1, 2],
+        [3, 4]
+      ];
+      const transposed = [
+        [1, 3],
+        [2, 4]
+      ];
+      expect(transposeArray(arr)).to.be.eql(transposed)
+    });
+    it("transpose array random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let A = randInt([5, 15]);
+        let B = randInt([5, 15]);
+        const arr = new Array(B).fill(new Array(A).fill(0));
+        const transposed = new Array(A).fill(new Array(B).fill(0));
+        expect(transposeArray(arr)).to.be.eql(transposed);
+      }
+    });
+  });
+
   describe("MSE", () => {
     it("mse throw", () => {
       expect(MSE.bind([1], [1, 2])).to.throw
@@ -17,17 +62,6 @@ describe("UtilsTest", () => {
       expect(MSE(a, b)).to.be.equal(0.5);
       a = [1, 1];
       expect(MSE(a, b)).to.be.equal(1);
-    });
-  });
-
-  describe("rand integer", () => {
-    it("random tests", () => {
-      for (let i = 0; i < 1000; i++) {
-        let rand = randInt([-10, 10]);
-        expect(rand).to.be.at.most(10);
-        expect(rand).to.be.at.least(-10);
-        expect(Number.isInteger(rand)).to.be.true;
-      }
     });
   });
 
