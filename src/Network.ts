@@ -169,9 +169,13 @@ export class Network {
     this.fitness = error;
   }
 
-  mutate() {
-    if (Math.random() <= 0.6) this.mutateAddNode();
-    if (Math.random() <= 0.4) this.mutateAddConnection();
-    if (Math.random() <= 0.6) this.mutateModWeight();
+  mutate(distribution: { addNode: number, addConnection: number, modWeight: number } = {
+    addNode: 0.6,
+    addConnection: 0.4,
+    modWeight: 0.6
+  }) {
+    if (Math.random() <= distribution.addNode) this.mutateAddNode();
+    if (Math.random() <= distribution.addConnection) this.mutateAddConnection();
+    if (Math.random() <= distribution.modWeight) this.mutateModWeight();
   }
 }
