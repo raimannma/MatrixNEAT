@@ -243,6 +243,39 @@ describe("Matrix Test", () => {
       }
     });
   });
+
+  describe("dot product", () => {
+    it("no column vector", () => {
+      for (let i = 0; i < 1000; i++) {
+        let j = randInt([2, 10]);
+        const A = Matrix.randFloat(10, j, [-5, 5]);
+        const B = Matrix.randFloat(10, j, [-5, 5]);
+        expect(Matrix.dotProduct.bind(A, B)).to.throw;
+      }
+    });
+    it("column vecotors of different length", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([2, 10]);
+        const A = Matrix.randFloat(i, 1, [-5, 5]);
+        const B = Matrix.randFloat(i + 1, 1, [-5, 5]);
+        expect(Matrix.dotProduct.bind(A, B)).to.throw;
+      }
+    })
+    it("orthogonal vectors", () => {
+      const A = Matrix.fromVerticalVector([1, 0]);
+      const B = Matrix.fromVerticalVector([0, 1]);
+      expect(Matrix.dotProduct(A, B)).to.be.equal(0);
+    });
+    it("symmetric multiplication", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([1, 50]);
+        const A = Matrix.randFloat(i, 1, [-5, 5]);
+        const B = Matrix.randFloat(i, 1, [-5, 5]);
+        expect(Matrix.dotProduct(A, B)).to.be.equal(Matrix.dotProduct(B, A));
+      }
+    });
+  });
+
   describe("topological sorting", () => {
     it("topological sorting cycle graph", () => {
       const graph = new Matrix(4, 4);

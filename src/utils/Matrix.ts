@@ -111,28 +111,25 @@ export class Matrix {
     if (!A.isColumnVector || !B.isColumnVector) throw new RangeError("Matrix has to be a column vector for dot multiplication");
     if (A.rows !== B.rows) throw new RangeError("Sizes of both vectors needs to be equal");
 
-    const vector1 = A.getColumnArray(0);
-    const vector2 = B.getColumnArray(0);
-
-    let sum = 0;
-    for (let i = 0; i < A.rows; i++) sum += vector1[i] * vector2[i];
-    return sum;
+    return A.copy.transpose().mul(B).get(0, 0);
   }
 
   getTopologicalSort(): number[] {
+    if (!this.isSquare) throw new RangeError("Topological sort only for square matrices possible");
+
     const copy = this.copy;
     const sortedList = [];
-    const nodeWithoutIncoming = copy.emptyColumns;
+    const emptyColumns = copy.emptyColumns;
 
-    while (nodeWithoutIncoming.length !== 0) {
-      let fromNode = nodeWithoutIncoming.splice(0, 1)[0]; // remove first node without incoming edges
-      sortedList.push(fromNode); // add it to the sorted list
+    while (emptyColumns.length !== 0) {
+      let i = emptyColumns.splice(0, 1)[0]; // remove first node without incoming edges
+      sortedList.push(i); // add it to the sorted list
 
-      for (let toNode = 0; toNode < copy.data[fromNode].length; toNode++) {
-        if (copy.data[fromNode][toNode] === 0) continue;
+      for (let j = 0; j < copy.data[i].length; j++) {
+        if (copy.data[i][j] === 0) continue;
 
-        copy.data[fromNode][toNode] = 0;
-        if (copy.isEmptyColumn(toNode)) nodeWithoutIncoming.push(toNode);
+        copy.data[i][j] = 0;
+        if (copy.isEmptyColumn(j)) emptyColumns.push(j);
       }
     }
     if (copy.emptyColumns.length !== copy.columns) throw new ReferenceError("There is a cycle in the matrix.");
@@ -152,9 +149,7 @@ export class Matrix {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < B.columns; j++) {
         let sum = 0;
-        for (let k = 0; k < this.columns; k++) {
-          sum += this.get(i, k) * B.get(k, j);
-        }
+        for (let k = 0; k < this.columns; k++) sum += this.get(i, k) * B.get(k, j);
         result.set(i, j, sum);
       }
     }
@@ -191,7 +186,7 @@ export class Matrix {
   }
 
   transpose(): Matrix {
-    this.data = transposeArray(this.to2DArray());
+    this.copyData(transposeArray(this.to2DArray()));
     return this;
   }
 
