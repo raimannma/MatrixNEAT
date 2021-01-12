@@ -242,6 +242,15 @@ describe("Matrix Test", () => {
         expect(A.copy.mul(C).columns).to.be.eq(C.columns);
       }
     });
+    it("matrix multiplication identity random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([1, 10]);
+        const A = Matrix.randFloat(i, i, [-5, 5]);
+        const I = Matrix.eye(i);
+        expect(A.copy.mul(I).equals(A));
+        expect(I.copy.mul(A).equals(A));
+      }
+    });
   });
 
   describe("dot product", () => {
