@@ -69,22 +69,21 @@ describe("Matrix Test", () => {
   describe("transpose matrix", () => {
     it("transpose matrix test", () => {
       const A = Matrix.randFloat(5, 7);
-      const B = A.copy.transpose();
+      const transposed = A.copy.transpose();
 
       // Dimensions should flip
-      expect(A.rows).to.be.equal(B.columns);
-      expect(A.columns).to.be.equal(B.rows);
+      expect(A.rows).to.be.equal(transposed.columns);
+      expect(A.columns).to.be.equal(transposed.rows);
 
       // Check entries
       for (let i = 0; i < A.rows; i++) {
         for (let j = 0; j < A.columns; j++) {
-          expect(A.get(i, j)).to.be.equals(B.get(j, i));
+          expect(A.get(i, j)).to.be.equals(transposed.get(j, i));
         }
       }
 
       // Two times transpose should be the same as original
-      B.transpose();
-      expect(A.equals(B)).to.be.true
+      expect(A.equals(transposed.transpose())).to.be.true
     });
     it("transpose matrix random tests", () => {
       for (let i = 0; i < 1000; i++) {
@@ -101,6 +100,10 @@ describe("Matrix Test", () => {
 
         // All matrices shouldn't change after two times transpose
         expect(A.equals(A.copy.transpose().transpose())).to.be.true
+
+        // Scalar multiplication
+        const scalar = randFloat([-5, 5]);
+        expect(A.copy.mul(scalar).transpose().equals(A.copy.transpose().mul(scalar))).to.be.true;
       }
     });
   });
