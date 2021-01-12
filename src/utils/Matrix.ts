@@ -111,12 +111,7 @@ export class Matrix {
     if (!A.isColumnVector || !B.isColumnVector) throw new RangeError("Matrix has to be a column vector for dot multiplication");
     if (A.rows !== B.rows) throw new RangeError("Sizes of both vectors needs to be equal");
 
-    const vector1 = A.getColumnArray(0);
-    const vector2 = B.getColumnArray(0);
-
-    let sum = 0;
-    for (let i = 0; i < A.rows; i++) sum += vector1[i] * vector2[i];
-    return sum;
+    return A.copy.transpose().mul(B).get(0, 0);
   }
 
   getTopologicalSort(): number[] {
