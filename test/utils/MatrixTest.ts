@@ -213,6 +213,22 @@ describe("Matrix Test", () => {
     });
   });
   describe("matrix multiplication", () => {
+    it("test specific matrix", () => {
+      const A = Matrix.from2dArray([
+        [3, 2, 1],
+        [1, 0, 2],
+      ]);
+      const B = Matrix.from2dArray([
+        [1, 2],
+        [0, 1],
+        [4, 0]
+      ]);
+      const expectedResult = Matrix.from2dArray([
+        [7, 8],
+        [9, 2]
+      ]);
+      expect(A.copy.mul(B).equals(expectedResult)).to.be.true;
+    });
     it("matrix multiplication test", () => {
       let A = Matrix.randFloat(3, 3);
       const I = Matrix.eye(3);
