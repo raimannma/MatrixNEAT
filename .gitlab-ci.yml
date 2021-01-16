@@ -6,14 +6,30 @@ before_script:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
     - if: '$CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"'
+    - if: '$CI_MERGE_REQUEST_EVENT_TYPE == "merge_request"'
     - if: '$CI_COMMIT_REF_NAME == "master"'
-
 
 stages:
   - test
+  - check-coverage
 
 test:
-  <<: *rules-default-and-merge-train
   stage: test
+  <<: *rules-default-and-merge-train
   script:
     - npm test
+
+check-coverage:
+  image: alpine:latest
+  <<: *rules-default-and-merge-train
+  stage: check-coverage
+  variables:
+    JOB_NAME: test
+    TARGET_BRANCH: master
+  before_script:
+    - apk add --update --no-cache curl jq
+  script:
+    - TARGET_PIPELINE_ID=`curl -s "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines?ref=${TARGET_BRANCH}&status=success&private_token=${PRIVATE_TOKEN}" | jq ".[0].id"`
+    - TARGET_COVERAGE=`curl -s "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${TARGET_PIPELINE_ID}/jobs?private_token=${PRIVATE_TOKEN}" | jq --arg JOB_NAME "$JOB_NAME" '.[] | select(.name==$JOB_NAME) | .coverage'`
+    - CURRENT_COVERAGE=`curl -s "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs?private_token=${PRIVATE_TOKEN}" | jq --arg JOB_NAME "$JOB_NAME" '.[] | select(.name==$JOB_NAME) | .coverage'`
+    - if  [ ${CURRENT_COVERAGE%.*} -lt $((${TARGET_COVERAGE%.*} - 1)) ]; then echo "Coverage decreased from ${TARGET_COVERAGE} to ${CURRENT_COVERAGE}" && exit 1; fi;
