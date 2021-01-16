@@ -2,11 +2,19 @@ image: node:latest
 before_script:
   - npm ci --also=dev
 
+.rules-default-and-merge-train: &rules-default-and-merge-train
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_MERGE_REQUEST_EVENT_TYPE == "merge_train"'
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+
+
 stages:
   - test
   - deploy
 
 test:
+  <<: *rules-default-and-merge-train
   stage: test
   script:
     - npm test
@@ -16,6 +24,7 @@ test:
     expire_in: 1 day
 
 coverage:
+  <<: *rules-default-and-merge-train
   stage: deploy
   needs:
     - test
