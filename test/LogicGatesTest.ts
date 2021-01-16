@@ -104,8 +104,9 @@ describe("LogicGatesTest", () => {
   describe("Logic Gates", () => {
     for (const [key, value] of Object.entries(data)) {
       it(`Test convergence on ${key}`, () => {
+        const populationSize = 100;
         const population = new Population(
-          100,
+          populationSize,
           {
             inputSize: value.inputs[0].length,
             outputSize: value.outputs[0].length
@@ -120,6 +121,7 @@ describe("LogicGatesTest", () => {
         for (let i = 0; i < 50; i++) {
           let currentError = population.evolve(value.inputs, value.outputs);
           expect(currentError).to.be.at.most(startError);
+          expect(population.size).to.be.equal(populationSize);
         }
       });
     }
