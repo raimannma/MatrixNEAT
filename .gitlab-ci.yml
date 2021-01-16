@@ -11,27 +11,9 @@ before_script:
 
 stages:
   - test
-  - deploy
 
 test:
   <<: *rules-default-and-merge-train
   stage: test
   script:
     - npm test
-  artifacts:
-    paths:
-      - .nyc_output
-    expire_in: 1 day
-
-coverage:
-  <<: *rules-default-and-merge-train
-  stage: deploy
-  needs:
-    - test
-  script:
-    - npm run cobertura-coverage
-    - npm run text-coverage
-  artifacts:
-    reports:
-      cobertura: coverage/cobertura-coverage.xml
-    expire_in: 1 month
