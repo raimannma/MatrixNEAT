@@ -34,5 +34,4 @@ coverage:
   artifacts:
     reports:
       cobertura: coverage/cobertura-coverage.xml
-    paths:
-      - coverage
+    expire_in: 1 month
