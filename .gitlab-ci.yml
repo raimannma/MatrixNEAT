@@ -20,11 +20,7 @@ coverage:
   needs:
     - test
   script:
-    - npm i -g @dvcorg/cml
     - npm run cobertura-coverage
-    - npm run html-coverage
-    - echo "### [Coverage Report](https://my_neat.gitlab.io/-/matrix-neat/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html)" >> report.md
-    - cml-send-comment report.md
   artifacts:
     reports:
       cobertura: coverage/cobertura-coverage.xml
