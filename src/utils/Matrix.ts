@@ -51,8 +51,8 @@ export class Matrix {
     return this.columns === 1;
   }
 
-  get jsonString(): string {
-    return JSON.stringify(this.data);
+  get json(): MatrixJSON {
+    return {data: this.data};
   }
 
   get emptyColumns() {
@@ -99,12 +99,8 @@ export class Matrix {
     return new Matrix(0, 0).copyData(arr);
   }
 
-  static fromJsonString(json: string): Matrix {
-    let data = JSON.parse(json);
-    if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
-      return this.from2dArray(data);
-    }
-    throw new TypeError("JSON String should represent 2d number array");
+  static fromJson(json: MatrixJSON): Matrix {
+    return Matrix.from2dArray(json.data);
   }
 
   static dotProduct(A: Matrix, B: Matrix): number {
@@ -334,4 +330,8 @@ export class Matrix {
     this.data = arr;
     return this;
   }
+}
+
+export interface MatrixJSON {
+  data: number[][];
 }
