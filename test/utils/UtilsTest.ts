@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {isNumber, MSE, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
+import {isNumber, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
 import {Matrix} from "../../src/utils/Matrix";
 
 describe("UtilsTest", () => {
@@ -46,22 +46,6 @@ describe("UtilsTest", () => {
         const transposed = new Array(A).fill(new Array(B).fill(0));
         expect(transposeArray(arr)).to.be.eql(transposed);
       }
-    });
-  });
-
-  describe("MSE", () => {
-    it("mse throw", () => {
-      expect(MSE.bind([1], [1, 2])).to.throw
-      expect(MSE.bind([], [])).to.throw
-    });
-    it("mse calculation", () => {
-      let a = [0, 0];
-      let b = [0, 0];
-      expect(MSE(a, b)).to.be.equal(0);
-      a = [1, 0];
-      expect(MSE(a, b)).to.be.equal(0.5);
-      a = [1, 1];
-      expect(MSE(a, b)).to.be.equal(1);
     });
   });
 

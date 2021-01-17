@@ -16,17 +16,12 @@ export function isNumber(n: any) {
   return !isNaN(parseFloat(n)) && !isNaN(n - 0)
 }
 
-export function MSE(arr1: number[], arr2: number[]): number {
-  if (arr1.length !== arr2.length) throw new RangeError("Array dimensions doesn't match.");
-  let error = 0;
-  for (let i = 0; i < arr1.length; i++) {
-    error += Math.pow(arr1[i] - arr2[i], 2);
-  }
-  return error / arr1.length;
-}
-
 export function pickRandom<T>(arr: T[]): T {
   if (arr.length === 0) throw new RangeError("Can't pick from empty array.");
 
   return arr[randInt([0, arr.length - 1])];
+}
+
+export function sum(array: number[]): number {
+  return array.reduce((a, b) => a + b, 0);
 }
