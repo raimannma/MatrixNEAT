@@ -1,6 +1,7 @@
 import {Matrix, MatrixJSON} from "./utils/Matrix";
-import {MSE, pickRandom, randFloat} from "./utils/Utils";
+import {pickRandom, randFloat} from "./utils/Utils";
 import {ActivationType, TANH} from "activations";
+import {MSELoss} from "./methods/Loss";
 
 export class Network {
   /**
@@ -163,7 +164,7 @@ export class Network {
     this.addConnection(newNode, randomConnection[1], this.adjacency.get(randomConnection[0], randomConnection[1]));
   }
 
-  evaluate(inputs: number[][], targets: number[][], loss: (output: number[], target: number[]) => number = MSE) {
+  evaluate(inputs: number[][], targets: number[][], loss: (output: number[], target: number[]) => number = MSELoss) {
     let error = 0;
     for (let i = 0; i < inputs.length; i++) {
       error -= loss(this.forward(inputs[i]), targets[i]);
