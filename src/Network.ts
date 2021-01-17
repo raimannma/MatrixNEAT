@@ -1,4 +1,4 @@
-import {Matrix} from "./utils/Matrix";
+import {Matrix, MatrixJSON} from "./utils/Matrix";
 import {MSE, pickRandom, randFloat} from "./utils/Utils";
 import {ActivationType, TANH} from "activations";
 
@@ -48,18 +48,22 @@ export class Network {
   }
 
   get copy(): Network {
-    return Network.fromJsonString(this.jsonString);
+    return Network.fromJson(this.json);
   }
 
-  get jsonString(): string {
-    return JSON.stringify([this.numInputs, this.numOutputs, this.adjacency.jsonString, this.nodes.jsonString])
+  get json(): NetworkJSON {
+    return {
+      numInputs: this.numInputs,
+      numOutputs: this.numOutputs,
+      adjacency: this.adjacency.json,
+      nodes: this.nodes.json,
+    };
   }
 
-  static fromJsonString(json: string): Network {
-    let jsonNetwork = JSON.parse(json);
-    const out = new Network(jsonNetwork[0], jsonNetwork[1]);
-    out.adjacency = Matrix.fromJsonString(jsonNetwork[2]);
-    out.nodes = Matrix.fromJsonString(jsonNetwork[2]);
+  static fromJson(jsonNetwork: NetworkJSON): Network {
+    const out = new Network(jsonNetwork.numInputs, jsonNetwork.numOutputs);
+    out.adjacency = Matrix.fromJson(jsonNetwork.adjacency);
+    out.nodes = Matrix.fromJson(jsonNetwork.nodes);
     return out;
   }
 
@@ -178,4 +182,11 @@ export class Network {
     if (Math.random() <= distribution.addConnection) this.mutateAddConnection();
     if (Math.random() <= distribution.modWeight) this.mutateModWeight();
   }
+}
+
+export interface NetworkJSON {
+  numInputs: number;
+  numOutputs: number;
+  adjacency: MatrixJSON;
+  nodes: MatrixJSON;
 }
