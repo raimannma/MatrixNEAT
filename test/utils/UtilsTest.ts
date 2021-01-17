@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {isNumber, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
+import {cantorPair, isNumber, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
 import {Matrix} from "../../src/utils/Matrix";
 
 describe("UtilsTest", () => {
@@ -71,5 +71,42 @@ describe("UtilsTest", () => {
     it("is number of object", () => {
       expect(isNumber(Matrix.ones(1))).to.be.false;
     });
+  });
+
+  describe("cantor pair", () => {
+    it("cantorPair(int,int) is int random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        const a = randInt([0, 100]);
+        const b = randInt([0, 100]);
+        const pair = cantorPair(a, b);
+        expect(Number.isInteger(pair)).to.be.true;
+      }
+    });
+    it("invert cantor pair random tests", () => {
+      for (let i = 0; i < 1000; i++) {
+        const a = randInt([0, 100]);
+        const b = randInt([0, 100]);
+        const pair = cantorPair(a, b);
+        const w = Math.floor((Math.sqrt(8 * pair + 1) - 1) / 2);
+        const t = (w * w + w) / 2;
+        const b2 = pair - t;
+        const a2 = w - b2;
+        expect(a).to.be.equal(a2);
+        expect(b).to.be.equal(b2);
+      }
+    });
+    const examples = [
+      {input: [2, 0], pair: 3},
+      {input: [3, 2], pair: 17},
+      {input: [2, 2], pair: 12},
+      {input: [0, 3], pair: 9},
+      {input: [47, 32], pair: 3192},
+      {input: [52, 1], pair: 1432},
+    ];
+    for (let example of examples) {
+      it(`calculate example cantorPair(${example.input}) -> ${example.pair}`, () => {
+        expect(cantorPair(example.input[0], example.input[1])).to.be.equal(example.pair);
+      });
+    }
   });
 });
