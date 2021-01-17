@@ -25,3 +25,7 @@ export function pickRandom<T>(arr: T[]): T {
 export function sum(array: number[]): number {
   return array.reduce((a, b) => a + b, 0);
 }
+
+export function cantorPair(a: number, b: number): number {
+  return Math.round(b + (a + b) * (a + b + 1) / 2); // round to avoid float values
+}
