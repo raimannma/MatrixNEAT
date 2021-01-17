@@ -135,11 +135,14 @@ export class Network {
 
     let possible = [];
     // Get all possible node pairs that don't have a connection and are forward pointing
-    for (let i = 0; i < sortedNodes.length - 1; i++) {
-      for (let j = Math.max(this.numInputs, i + 1); j < sortedNodes.length; j++) {
-        if (this.adjacency.get(sortedNodes[i], sortedNodes[j]) === 0) {
-          possible.push([sortedNodes[i], sortedNodes[j]]);
-        }
+    for (let fromIndex = 0; fromIndex < sortedNodes.length - 1; fromIndex++) {
+      for (let toIndex = fromIndex + 1; toIndex < sortedNodes.length; toIndex++) {
+        const [fromNodeIndex, toNodeIndex] = [sortedNodes[fromIndex], sortedNodes[toIndex]];
+        if (this.isOutputNode(fromNodeIndex)) continue;
+        if (this.isInputNode(toNodeIndex)) continue;
+        if (this.getWeight(fromNodeIndex, toNodeIndex) !== 0) continue;
+
+        possible.push([fromNodeIndex, toNodeIndex]);
       }
     }
 
@@ -181,6 +184,18 @@ export class Network {
     if (Math.random() <= distribution.addNode) this.mutateAddNode();
     if (Math.random() <= distribution.addConnection) this.mutateAddConnection();
     if (Math.random() <= distribution.modWeight) this.mutateModWeight();
+  }
+
+  private getWeight(fromIndex: number, toIndex: number): number {
+    return this.adjacency.get(fromIndex, toIndex);
+  }
+
+  private isInputNode(index: number): boolean {
+    return index < this.numInputs;
+  }
+
+  private isOutputNode(index: number): boolean {
+    return index < this.numOutputs && !this.isInputNode(index);
   }
 }
 
