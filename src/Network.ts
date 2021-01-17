@@ -1,7 +1,7 @@
 import {Matrix, MatrixJSON} from "./utils/Matrix";
 import {pickRandom, randFloat} from "./utils/Utils";
 import {ActivationType, TANH} from "activations";
-import {MSELoss} from "./methods/Loss";
+import {MSELoss} from "./utils/Loss";
 
 export class Network {
   /**

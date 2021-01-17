@@ -1,6 +1,6 @@
 import {describe, it} from "mocha"
 import {expect} from "chai";
-import {ALL_LOSSES} from "../../src/methods/Loss";
+import {ALL_LOSSES} from "../../src/utils/Loss";
 import {randFloat} from "../../src/utils/Utils";
 
 describe("Loss", () => {
