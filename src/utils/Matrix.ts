@@ -10,6 +10,10 @@ export class Matrix {
     }
   }
 
+  static get empty(): Matrix {
+    return new Matrix(0, 0);
+  }
+
   get size(): [number, number] {
     return [this.rows, this.columns];
   }
