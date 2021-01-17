@@ -228,8 +228,6 @@ export class Matrix {
   }
 
   addRowAtIndex(rowIndex: number, value: number[] | number = 0): Matrix {
-    if (Array.isArray(value) && value.length !== this.columns) throw new RangeError("MatrixIndexOutOfBounds");
-
     this.data.splice(
       rowIndex,
       0,
@@ -243,8 +241,6 @@ export class Matrix {
   }
 
   addColumnAtIndex(columnIndex: number, value: number[] | number = 0): Matrix {
-    if (Array.isArray(value) && value.length !== this.rows) throw new RangeError("MatrixIndexOutOfBounds");
-
     for (let i = 0; i < this.data.length; i++) {
       this.data[i].splice(columnIndex, 0, Array.isArray(value) ? value[i] : value);
     }
