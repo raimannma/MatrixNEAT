@@ -98,7 +98,7 @@ export class Network {
 
       // Sum up input[i] * weights[i]
       let weights = this.adjacency.getColumnVector(node)
-      let inputs = this.nodes.getColumnVector(1);
+      let inputs = this.nodes.getColumnVector(this.nodes.columns - 1);
 
       let result = Matrix.dotProduct(weights, inputs);
 
@@ -115,7 +115,7 @@ export class Network {
     // Collect outputs
     const out = [];
     for (let i = this.numInputs; i < this.numInputs + this.numOutputs; i++) {
-      out.push(this.nodes.get(i, 1));
+      out.push(this.nodes.get(i, this.nodes.columns - 1));
     }
 
     // Clear nodes matrix
