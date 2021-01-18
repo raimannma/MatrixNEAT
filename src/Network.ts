@@ -187,16 +187,16 @@ export class Network {
     if (Math.random() <= distribution.modWeight) this.mutateModWeight();
   }
 
-  private getWeight(fromIndex: number, toIndex: number): number {
-    return this.adjacency.get(fromIndex, toIndex);
-  }
-
-  private isInputNode(index: number): boolean {
+  isInputNode(index: number): boolean {
     return index < this.numInputs;
   }
 
-  private isOutputNode(index: number): boolean {
-    return index < this.numOutputs && !this.isInputNode(index);
+  isOutputNode(index: number): boolean {
+    return this.numInputs <= index && index < this.numInputs + this.numOutputs;
+  }
+
+  private getWeight(fromIndex: number, toIndex: number): number {
+    return this.adjacency.get(fromIndex, toIndex);
   }
 }
 
