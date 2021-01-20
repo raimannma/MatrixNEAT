@@ -25,7 +25,7 @@
   "devDependencies": {
     "@types/mocha": "8.2.0",
     "@types/chai": "4.2.14",
-    "@types/node": "14.14.21",
+    "@types/node": "14.14.22",
     "nyc": "15.1.0"
   }
 }
