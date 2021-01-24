@@ -103,7 +103,8 @@ describe("LogicGatesTest", () => {
 
   describe("Logic Gates", () => {
     for (const [key, value] of Object.entries(data)) {
-      it(`Test convergence on ${key}`, () => {
+      it(`Test convergence on ${key}`, function () {
+        this.timeout(10000);
         const populationSize = 100;
         const population = new Population(
           populationSize,
