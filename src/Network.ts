@@ -109,7 +109,7 @@ export class Network {
       result = this.activation(result);
 
       // Store result
-      this.nodes.set(node, 1, result);
+      this.nodes.set(node, this.nodes.columns - 1, result);
     }
 
     // Collect outputs
