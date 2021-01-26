@@ -4,6 +4,8 @@ import {ActivationType, TANH} from "activations";
 import {MSELoss} from "./utils/Loss";
 
 export class Network {
+  private static readonly WEIGHT_BOUNDS: [number, number] = [-1, 1];
+  private static readonly BIAS_BOUNDS: [number, number] = [-1, 1];
   /**
    * Storing connections and weights
    * @private
@@ -36,7 +38,7 @@ export class Network {
     // Create bias matrix (vector)
     let biases = [];
     for (let i = 0; i < numInputs; i++) biases.push(0);
-    for (let i = 0; i < numOutputs; i++) biases.push(options.randomBias ? randFloat([-1, 1]) : 1);
+    for (let i = 0; i < numOutputs; i++) biases.push(options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
     this.nodes = Matrix.fromVerticalVector(biases);
   }
 
@@ -69,12 +71,12 @@ export class Network {
   }
 
   addNode(randomBias: boolean = false): number {
-    this.nodes.addRowAtEnd(randomBias ? randFloat([-1, 1]) : 1);
+    this.nodes.addRowAtEnd(randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
     this.adjacency.addRowAndColumnAtEnd();
     return this.adjacency.rows - 1;
   }
 
-  addConnection(id1: number, id2: number, weight: number = randFloat([-1, 1])) {
+  addConnection(id1: number, id2: number, weight: number = randFloat(Network.WEIGHT_BOUNDS)) {
     if (id2 < this.numInputs) throw new ReferenceError("Can't connect to input node!");
 
     this.adjacency.set(id1, id2, weight);
@@ -128,7 +130,7 @@ export class Network {
     if (this.connections.length === 0) return;
 
     const randomConnection = pickRandom(this.connections);
-    this.adjacency.set(randomConnection[0], randomConnection[1], randFloat([-1, 1]))
+    this.adjacency.set(randomConnection[0], randomConnection[1], randFloat(Network.WEIGHT_BOUNDS))
   }
 
   mutateAddConnection(): void {
@@ -150,7 +152,7 @@ export class Network {
     if (possible.length === 0) return;
 
     const randomNodePair = pickRandom(possible);
-    this.addConnection(randomNodePair[0], randomNodePair[1], randFloat([-1, 1]))
+    this.addConnection(randomNodePair[0], randomNodePair[1], randFloat(Network.WEIGHT_BOUNDS))
   }
 
   mutateAddNode(): void {
