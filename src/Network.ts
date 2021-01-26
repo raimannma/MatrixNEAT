@@ -89,7 +89,7 @@ export class Network {
     this.nodes.addColumnAtEnd(); // prepare for output values of each node
 
     // Set inputs
-    for (let i = 0; i < this.numInputs; i++) this.nodes.set(i, 1, inputs[i]);
+    for (let i = 0; i < this.numInputs; i++) this.nodes.set(i, this.nodes.columns - 1, inputs[i]);
 
     // propagate
     for (let i = 0; i < orderOfActivation.length; i++) {
