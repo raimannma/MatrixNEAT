@@ -1,12 +1,12 @@
-import {isNumber, randFloat, randInt, transposeArray} from "./Utils";
+import {fastIsNaN, isNumber, randFloat, randInt, transposeArray} from "./Utils";
 
 export class Matrix {
   private data: number[][];
 
-  constructor(rows: number, columns: number) {
+  constructor(rows: number, columns: number = rows) {
     this.data = [];
     for (let i = 0; i < rows; i++) {
-      this.data.push(new Array(columns).fill(0));
+      this.data.push(new Array(columns).fill(NaN));
     }
   }
 
@@ -126,9 +126,9 @@ export class Matrix {
       sortedList.push(i); // add it to the sorted list
 
       for (let j = 0; j < copy.data[i].length; j++) {
-        if (copy.data[i][j] === 0) continue;
+        if (fastIsNaN(copy.data[i][j])) continue;
 
-        copy.data[i][j] = 0;
+        copy.data[i][j] = NaN;
         if (copy.isEmptyColumn(j)) emptyColumns.push(j);
       }
     }
@@ -149,7 +149,12 @@ export class Matrix {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < B.columns; j++) {
         let sum = 0;
-        for (let k = 0; k < this.columns; k++) sum += this.get(i, k) * B.get(k, j);
+        for (let k = 0; k < this.columns; k++) {
+          let factor1 = this.get(i, k);
+          let factor2 = B.get(k, j);
+          if (fastIsNaN(factor1) || fastIsNaN(factor2)) continue
+          sum += this.get(i, k) * B.get(k, j);
+        }
         result.set(i, j, sum);
       }
     }
@@ -227,7 +232,7 @@ export class Matrix {
     return this.removeColumn(this.columns - 1);
   }
 
-  addRowAtIndex(rowIndex: number, value: number[] | number = 0): Matrix {
+  addRowAtIndex(rowIndex: number, value: number[] | number = NaN): Matrix {
     this.data.splice(
       rowIndex,
       0,
@@ -236,22 +241,22 @@ export class Matrix {
     return this;
   }
 
-  addRowAtEnd(value: number[] | number = 0): Matrix {
+  addRowAtEnd(value: number[] | number = NaN): Matrix {
     return this.addRowAtIndex(this.rows, value);
   }
 
-  addColumnAtIndex(columnIndex: number, value: number[] | number = 0): Matrix {
+  addColumnAtIndex(columnIndex: number, value: number[] | number = NaN): Matrix {
     for (let i = 0; i < this.data.length; i++) {
       this.data[i].splice(columnIndex, 0, Array.isArray(value) ? value[i] : value);
     }
     return this;
   }
 
-  addColumnAtEnd(value: number[] | number = 0): Matrix {
+  addColumnAtEnd(value: number[] | number = NaN): Matrix {
     return this.addColumnAtIndex(this.columns, value);
   }
 
-  addRowAndColumnAtEnd(value: number[] | number = 0): Matrix {
+  addRowAndColumnAtEnd(value: number[] | number = NaN): Matrix {
     return this.addRowAtEnd(value).addColumnAtEnd(value);
   }
 
@@ -311,12 +316,12 @@ export class Matrix {
     if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
 
     for (let i = 0; i < this.rows; i++) {
-      if (this.data[i][columnIndex] !== 0) return false;
+      if (!fastIsNaN(this.data[i][columnIndex])) return false;
     }
     return true;
   }
 
-  setRow(rowIndex: number, value: number | number[] = 0) {
+  setRow(rowIndex: number, value: number | number[] = NaN) {
     if (!this.checkRowIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
     if (Array.isArray(value)) {
       if (value.length !== this.columns) throw new RangeError("MatrixIndexOutOfBounds");

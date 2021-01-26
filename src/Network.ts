@@ -1,5 +1,5 @@
 import {Matrix, MatrixJSON} from "./utils/Matrix";
-import {pickRandom, randFloat} from "./utils/Utils";
+import {fastIsNaN, pickRandom, randFloat} from "./utils/Utils";
 import {ActivationType, TANH} from "activations";
 import {MSELoss} from "./utils/Loss";
 
@@ -33,7 +33,7 @@ export class Network {
     this.activation = options.activation;
 
     // Create adjacency matrix
-    this.adjacency = Matrix.zeros(this.numInputs + this.numOutputs);
+    this.adjacency = new Matrix(this.numInputs + this.numOutputs);
 
     // Create bias matrix (vector)
     let biases = [];
@@ -45,7 +45,7 @@ export class Network {
   get connections(): [number, number][] {
     let connections = [];
     this.adjacency.forEach(((element, row, column) => {
-      if (element !== 0) connections.push([row, column]);
+      if (!fastIsNaN(element)) connections.push([row, column]);
     }));
     return connections;
   }
@@ -76,10 +76,10 @@ export class Network {
     return this.adjacency.rows - 1;
   }
 
-  addConnection(id1: number, id2: number, weight: number = randFloat(Network.WEIGHT_BOUNDS)) {
-    if (id2 < this.numInputs) throw new ReferenceError("Can't connect to input node!");
+  addConnection(index1: number, index2: number, weight: number = randFloat(Network.WEIGHT_BOUNDS)) {
+    if (index2 < this.numInputs) throw new ReferenceError("Can't connect to input node!");
 
-    this.adjacency.set(id1, id2, weight);
+    this.adjacency.set(index1, index2, weight);
   }
 
   forward(inputs: number[]) {
@@ -143,7 +143,7 @@ export class Network {
         const [fromNodeIndex, toNodeIndex] = [sortedNodes[fromIndex], sortedNodes[toIndex]];
         if (this.isOutputNode(fromNodeIndex)) continue;
         if (this.isInputNode(toNodeIndex)) continue;
-        if (this.getWeight(fromNodeIndex, toNodeIndex) !== 0) continue;
+        if (!fastIsNaN(this.getWeight(fromNodeIndex, toNodeIndex))) continue;
 
         possible.push([fromNodeIndex, toNodeIndex]);
       }

@@ -327,7 +327,7 @@ describe("Matrix Test", () => {
       const sort = graph.getTopologicalSort();
       for (let node of sort) {
         expect(graph.isEmptyColumn(node)).to.be.true;
-        graph.setRow(node, 0);
+        graph.setRow(node);
       }
 
       const graph2 = new Matrix(7, 7);
@@ -344,7 +344,7 @@ describe("Matrix Test", () => {
       const sort2 = graph2.getTopologicalSort();
       for (let node of sort2) {
         expect(graph2.isEmptyColumn(node)).to.be.true;
-        graph2.setRow(node, 0);
+        graph2.setRow(node);
       }
     });
   });
