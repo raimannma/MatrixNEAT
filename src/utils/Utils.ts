@@ -13,7 +13,7 @@ export function transposeArray(arr: number[][]): number[][] {
 }
 
 export function isNumber(n: any) {
-  return !isNaN(parseFloat(n)) && !isNaN(n - 0)
+  return !fastIsNaN(parseFloat(n)) && !fastIsNaN(n - 0)
 }
 
 export function pickRandom<T>(arr: T[]): T {
@@ -28,4 +28,8 @@ export function sum(array: number[]): number {
 
 export function cantorPair(a: number, b: number): number {
   return Math.round(b + (a + b) * (a + b + 1) / 2); // round to avoid float values
+}
+
+export function fastIsNaN(a: number) {
+  return a !== a;
 }

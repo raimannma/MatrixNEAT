@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {describe, it} from "mocha";
-import {cantorPair, isNumber, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
+import {cantorPair, fastIsNaN, isNumber, pickRandom, randFloat, randInt, transposeArray} from "../../src/utils/Utils";
 import {Matrix} from "../../src/utils/Matrix";
 
 describe("UtilsTest", () => {
@@ -108,5 +108,18 @@ describe("UtilsTest", () => {
         expect(cantorPair(example.input[0], example.input[1])).to.be.equal(example.pair);
       });
     }
+  });
+  describe("fast is NaN", () => {
+    it("test with NaN", () => {
+      expect(fastIsNaN(NaN)).to.be.true;
+    });
+    it("test with no NaN", () => {
+      for (let i = 0; i < 1000; i++) {
+        expect(fastIsNaN(randFloat([-10, 10]))).to.be.false;
+      }
+      expect(fastIsNaN(Infinity)).to.be.false;
+      expect(fastIsNaN(null)).to.be.false;
+      expect(fastIsNaN(undefined)).to.be.false;
+    });
   });
 });
