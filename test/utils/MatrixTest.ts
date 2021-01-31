@@ -26,7 +26,7 @@ describe("Matrix Test", () => {
       expect(A.isSquare).to.be.true;
     });
     it("square matrix random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -49,13 +49,13 @@ describe("Matrix Test", () => {
     });
     it("symmetric matrix random tests", () => {
       // Test non square matrices -> should always return false
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         const A = Matrix.randFloat(3, 4);
         expect(A.isSymmetric).to.be.false;
       }
 
       // Test random matrices
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([3, 5]);
         let j = randInt([3, 5]);
         const A = Matrix.randInt(i, j, [0, 1]);
@@ -86,7 +86,7 @@ describe("Matrix Test", () => {
       expect(A.equals(transposed.transpose())).to.be.true
     });
     it("transpose matrix random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -110,7 +110,7 @@ describe("Matrix Test", () => {
 
   describe("matrix get", () => {
     it("get outside of matrix random tests", () => {
-      for (let k = 0; k < 1000; k++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -124,7 +124,7 @@ describe("Matrix Test", () => {
       }
     });
     it("get value in matrix random tests", () => {
-      for (let k = 0; k < 1000; k++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -141,7 +141,7 @@ describe("Matrix Test", () => {
 
   describe("matrix set", () => {
     it("set outside of matrix random tests", () => {
-      for (let k = 0; k < 1000; k++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -155,7 +155,7 @@ describe("Matrix Test", () => {
       }
     });
     it("set value in matrix random tests", () => {
-      for (let k = 0; k < 1000; k++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-1, 1]);
@@ -171,11 +171,11 @@ describe("Matrix Test", () => {
       }
     });
     it("mirror values in set matrix random tests", () => {
-      for (let k = 0; k < 1000; k++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([5, 6]);
         const A = Matrix.zeros(i);
 
-        for (let h = 0; h < 100; h++) {
+        for (let __ = 0; __ < 100; __++) {
           A.set(randInt([0, i - 1]), randInt([0, i - 1]), randFloat([-9, 9]), true);
         }
 
@@ -197,7 +197,7 @@ describe("Matrix Test", () => {
       });
     });
     it("scalar matrix multiplication random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -247,7 +247,7 @@ describe("Matrix Test", () => {
       expect(A.copy.mul(B).transpose().equals(B.copy.transpose().mul(A.copy.transpose()))).to.be.true
     });
     it("matrix multiplication random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
@@ -262,7 +262,7 @@ describe("Matrix Test", () => {
       }
     });
     it("matrix multiplication identity random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 10]);
         const A = Matrix.randFloat(i, i, [-5, 5]);
         const I = Matrix.eye(i);
@@ -274,7 +274,7 @@ describe("Matrix Test", () => {
 
   describe("dot product", () => {
     it("no column vector", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let j = randInt([2, 10]);
         const A = Matrix.randFloat(10, j, [-5, 5]);
         const B = Matrix.randFloat(10, j, [-5, 5]);
@@ -282,7 +282,7 @@ describe("Matrix Test", () => {
       }
     });
     it("column vecotors of different length", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([2, 10]);
         const A = Matrix.randFloat(i, 1, [-5, 5]);
         const B = Matrix.randFloat(i + 1, 1, [-5, 5]);
@@ -295,7 +295,7 @@ describe("Matrix Test", () => {
       expect(Matrix.dotProduct(A, B)).to.be.equal(0);
     });
     it("symmetric multiplication", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let i = randInt([1, 50]);
         const A = Matrix.randFloat(i, 1, [-5, 5]);
         const B = Matrix.randFloat(i, 1, [-5, 5]);
@@ -350,7 +350,7 @@ describe("Matrix Test", () => {
   });
   describe("get row", () => {
     it("get row random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let [a, b, c, d, e, f, g, h, i] = [
           randFloat([-1, 1]),
           randFloat([-1, 1]),
@@ -376,7 +376,7 @@ describe("Matrix Test", () => {
   });
   describe("get column array", () => {
     it("get column array random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let [a, b, c, d, e, f, g, h, i] = [
           randFloat([-1, 1]),
           randFloat([-1, 1]),
@@ -402,7 +402,7 @@ describe("Matrix Test", () => {
   });
   describe("get column vector", () => {
     it("get column vector random tests", () => {
-      for (let i = 0; i < 1000; i++) {
+      for (let _ = 0; _ < 1000; _++) {
         let [a, b, c, d, e, f, g, h, i] = [
           randFloat([-1, 1]),
           randFloat([-1, 1]),
