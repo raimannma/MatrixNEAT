@@ -71,10 +71,6 @@ export class Matrix {
     return new Matrix(vector.length, 1).map((_, row) => vector[row]);
   }
 
-  static fromHorizontalVector(vector: number[]) {
-    return new Matrix(1, vector.length).map((_, row, column) => vector[column]);
-  }
-
   static zeros(rows: number, columns: number = rows): Matrix {
     return new Matrix(rows, columns).fill(0);
   }
