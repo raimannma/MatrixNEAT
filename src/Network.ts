@@ -6,15 +6,7 @@ import {MSELoss} from "./utils/Loss";
 export class Network {
   private static readonly WEIGHT_BOUNDS: [number, number] = [-1, 1];
   private static readonly BIAS_BOUNDS: [number, number] = [-1, 1];
-  /**
-   * Storing connections and weights
-   * @private
-   */
   adjacency: Matrix;
-  /**
-   * Storing the bias of each node
-   * @private
-   */
   nodes: Matrix;
   fitness: number;
   stagnation: number;
