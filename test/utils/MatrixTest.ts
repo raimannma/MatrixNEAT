@@ -4,6 +4,43 @@ import {randFloat, randInt} from "../../src/utils/Utils";
 import {expect} from "chai";
 
 describe("Matrix Test", () => {
+  it("matrix size random tests", () => {
+    for (let _ = 0; _ < 1000; _++) {
+      let i = randInt([1, 10]);
+      let j = randInt([1, 10]);
+      const A = Matrix.randFloat(i, j, [-5, 5]);
+      expect(A.rows).to.be.equal(i);
+      expect(A.columns).to.be.equal(j);
+      expect(A.size).to.be.deep.equal([i, j]);
+    }
+  });
+  it("is row/column vector random tests", () => {
+    for (let _ = 0; _ < 1000; _++) {
+      let i = randInt([1, 5]);
+      let j = randInt([1, 10]);
+      const A = Matrix.randFloat(i, j, [-5, 5]);
+      expect(A.isRowVector).to.be.equal(i === 1);
+      expect(A.isColumnVector).to.be.equal(j === 1);
+    }
+  });
+  it("copy matrices with copy function", () => {
+    for (let _ = 0; _ < 1000; _++) {
+      let i = randInt([1, 5]);
+      let j = randInt([1, 10]);
+      const A = Matrix.randFloat(i, j, [-5, 5]);
+      const copy = A.copy;
+      expect(A.equals(copy)).to.be.true
+    }
+  })
+  it("copy matrices with json", () => {
+    for (let _ = 0; _ < 1000; _++) {
+      let i = randInt([1, 5]);
+      let j = randInt([1, 10]);
+      const A = Matrix.randFloat(i, j, [-5, 5]);
+      const copy = Matrix.fromJson(A.json);
+      expect(A.equals(copy)).to.be.true
+    }
+  })
   describe("square matrix", () => {
     it("square matrix test", () => {
       const A = Matrix.zeros(5, 5);
