@@ -50,6 +50,14 @@ export class Network {
     return connections;
   }
 
+  get inputNodes(): number[] {
+    return this.nodes.getColumnArray(0).map((value, index) => index).filter(nodeIndex => this.isInputNode(nodeIndex));
+  }
+
+  get outputNodes(): number[] {
+    return this.nodes.getColumnArray(0).map((value, index) => index).filter(nodeIndex => this.isOutputNode(nodeIndex));
+  }
+
   get copy(): Network {
     return Network.fromJson(this.json);
   }
@@ -85,22 +93,21 @@ export class Network {
   forward(inputs: number[]) {
     if (inputs.length !== this.numInputs) throw new RangeError("Input dimensions doesn't match net dimensions.");
 
-    const orderOfActivation = this.adjacency.getTopologicalSort();
-    this.nodes.addColumnAtEnd(); // prepare for output values of each node
+    // get topological order, filter out input nodes
+    const orderOfActivation = this.adjacency.getTopologicalSort().filter(nodeIndex => !this.isInputNode(nodeIndex));
+
+    // prepare for output values of each node
+    const outputColumn = this.nodes.columns;
+    this.nodes.addColumnAtEnd();
 
     // Set inputs
-    for (let i = 0; i < this.numInputs; i++) this.nodes.set(i, this.nodes.columns - 1, inputs[i]);
+    for (let nodeIndex of this.inputNodes) this.nodes.set(nodeIndex, outputColumn, inputs[nodeIndex]);
 
     // propagate
-    for (let i = 0; i < orderOfActivation.length; i++) {
-      let node = orderOfActivation[i];
-      if (node < this.numInputs) continue; // do not propagate through input nodes
-
-      // Propagate
-
+    orderOfActivation.forEach(node => {
       // Sum up input[i] * weights[i]
       let weights = this.adjacency.getColumnVector(node)
-      let inputs = this.nodes.getColumnVector(this.nodes.columns - 1);
+      let inputs = this.nodes.getColumnVector(outputColumn);
 
       let result = Matrix.dotProduct(weights, inputs);
 
@@ -111,19 +118,14 @@ export class Network {
       result = this.activation(result);
 
       // Store result
-      this.nodes.set(node, this.nodes.columns - 1, result);
-    }
+      this.nodes.set(node, outputColumn, result);
+    });
 
     // Collect outputs
-    const out = [];
-    for (let i = this.numInputs; i < this.numInputs + this.numOutputs; i++) {
-      out.push(this.nodes.get(i, this.nodes.columns - 1));
-    }
-
+    const outputs = this.nodes.getColumnArray(outputColumn);
     // Clear nodes matrix
-    this.nodes.removeLastColumn();
-
-    return out;
+    this.nodes.removeColumn(outputColumn);
+    return this.outputNodes.map(nodeIndex => outputs[nodeIndex]);
   }
 
   mutateModWeight(): void {
