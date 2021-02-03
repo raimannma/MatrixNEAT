@@ -1,6 +1,6 @@
 import {Matrix, MatrixJSON} from "./utils/Matrix";
 import {fastIsNaN, pickRandom, randFloat} from "./utils/Utils";
-import {ActivationType, TANH} from "activations";
+import {ActivationType, Identitiy} from "activations";
 import {MSELoss} from "./utils/Loss";
 
 export class Network {
@@ -13,24 +13,25 @@ export class Network {
   readonly numInputs: number;
   readonly numOutputs: number;
   readonly activation: ActivationType;
+  readonly options: NetworkOptions;
 
-  constructor(numInputs: number, numOutputs: number, options: { randomBias: boolean, activation: ActivationType } = {
-    randomBias: false,
-    activation: TANH
-  }) {
-    this.numInputs = numInputs;
-    this.numOutputs = numOutputs
+  constructor(options: NetworkOptions) {
+    // Apply default options to options parameter
+    this.options = Object.assign({}, DefaultNetworkOptions, options);
+
+    this.numInputs = this.options.inputSize;
+    this.numOutputs = this.options.outputSize;
     this.fitness = -Infinity;
     this.stagnation = 0;
-    this.activation = options.activation;
+    this.activation = this.options.activation;
 
     // Create adjacency matrix
     this.adjacency = new Matrix(this.numInputs + this.numOutputs);
 
     // Create bias matrix (vector)
     let biases = [];
-    for (let i = 0; i < numInputs; i++) biases.push(0);
-    for (let i = 0; i < numOutputs; i++) biases.push(options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
+    for (let i = 0; i < this.numInputs; i++) biases.push(0);
+    for (let i = 0; i < this.numOutputs; i++) biases.push(this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
     this.nodes = Matrix.fromVerticalVector(biases);
   }
 
@@ -56,15 +57,14 @@ export class Network {
 
   get json(): NetworkJSON {
     return {
-      numInputs: this.numInputs,
-      numOutputs: this.numOutputs,
+      options: this.options,
       adjacency: this.adjacency.json,
       nodes: this.nodes.json,
     };
   }
 
   static fromJson(jsonNetwork: NetworkJSON): Network {
-    const out = new Network(jsonNetwork.numInputs, jsonNetwork.numOutputs);
+    const out = new Network(jsonNetwork.options);
     out.adjacency = Matrix.fromJson(jsonNetwork.adjacency);
     out.nodes = Matrix.fromJson(jsonNetwork.nodes);
     return out;
@@ -197,8 +197,19 @@ export class Network {
 }
 
 export interface NetworkJSON {
-  numInputs: number;
-  numOutputs: number;
+  options: NetworkOptions;
   adjacency: MatrixJSON;
   nodes: MatrixJSON;
+}
+
+export interface NetworkOptions {
+  inputSize: number;
+  outputSize: number;
+  randomBias?: boolean;
+  activation?: ActivationType;
+}
+
+const DefaultNetworkOptions: Partial<NetworkOptions> = {
+  randomBias: false,
+  activation: Identitiy
 }

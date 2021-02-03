@@ -1,17 +1,23 @@
-import {Network} from "./Network";
+import {Network, NetworkOptions} from "./Network";
 
 export class Population {
   private networks: Network[];
   private readonly populationSize: number;
   private readonly MAX_STAGNATION = 3;
   private readonly elitists: number = 10;
+  private readonly netOptions: NetworkOptions;
+  private options: PopulationOptions;
 
-  constructor(size: number, netOptions: { inputSize: number, outputSize: number }, populationOptions: { elitists: number } = {elitists: Math.floor(1 / 10 * size)}) {
+  constructor(size: number, netOptions: NetworkOptions, populationOptions: PopulationOptions) {
+    // Apply default options to options parameter
+    this.options = Object.assign({}, DefaultPopulationOptions, populationOptions);
+
     this.populationSize = size;
-    this.elitists = populationOptions.elitists;
+    this.netOptions = netOptions;
+    this.elitists = this.options.elitists;
     this.networks = [];
     for (let i = 0; i < this.populationSize; i++) {
-      this.networks[i] = new Network(netOptions.inputSize, netOptions.outputSize);
+      this.networks[i] = new Network(netOptions);
     }
   }
 
@@ -25,7 +31,7 @@ export class Population {
 
     this.networks = this.networks.filter((network, index) => network.stagnation < this.MAX_STAGNATION || index < this.elitists);
     while (this.networks.length < this.populationSize) {
-      this.networks.push(new Network(this.networks[0].numInputs, this.networks[0].numOutputs))
+      this.networks.push(new Network(this.netOptions))
     }
 
     for (let i = this.elitists; i < this.networks.length; i++) {
@@ -38,4 +44,12 @@ export class Population {
   evaluateFitness(inputs: number[][], targets: number[][]) {
     this.networks.forEach(network => network.evaluate(inputs, targets));
   }
+}
+
+export interface PopulationOptions {
+  elitists?: number;
+}
+
+const DefaultPopulationOptions: Partial<PopulationOptions> = {
+  elitists: 2
 }
