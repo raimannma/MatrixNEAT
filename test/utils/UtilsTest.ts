@@ -51,8 +51,8 @@ describe("UtilsTest", () => {
 
   describe("pick random", () => {
     it("pick random throw", () => {
-      expect(pickRandom.bind([])).to.throw;
-      expect(pickRandom.bind([1])).not.to.throw;
+      expect(pickRandom.bind(null, [])).to.throw("Can't pick from empty array.");
+      expect(pickRandom.bind(null, [1])).not.to.throw;
     });
     it("pick random element", () => {
       const arr = [8, 3, 6, 3];
