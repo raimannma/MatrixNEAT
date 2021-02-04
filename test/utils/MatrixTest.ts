@@ -14,6 +14,11 @@ describe("Matrix Test", () => {
       expect(A.size).to.be.deep.equal([i, j]);
     }
   });
+  it("empty matrix", () => {
+    const E = Matrix.empty;
+    expect(E.rows).to.be.equal(0);
+    expect(E.columns).to.be.equal(0);
+  });
   it("is row/column vector random tests", () => {
     for (let _ = 0; _ < 1000; _++) {
       let i = randInt([1, 5]);
@@ -40,7 +45,71 @@ describe("Matrix Test", () => {
       const copy = Matrix.fromJson(A.json);
       expect(A.equals(copy)).to.be.true
     }
-  })
+  });
+
+  describe('remove row', () => {
+    it("outside of matrix", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+        expect(A.removeRow.bind(A, i)).to.throw("MatrixIndexOutOfBounds");
+      }
+    });
+    it("remove row from example matrices", () => {
+      const A = Matrix.from2dArray([
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9]
+      ]);
+      const B = Matrix.from2dArray([
+        [1, 2, 3],
+        [7, 8, 9]
+      ]);
+      expect(A.copy.removeRow(1).equals(B)).to.be.true;
+    });
+    it("remove last row", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+        expect(A.copy.removeRow(i - 1).equals(A.copy.removeLastRow())).to.be.true
+      }
+    });
+  });
+
+  describe('remove column', () => {
+    it("outside of matrix", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+        expect(A.removeColumn.bind(A, j)).to.throw("MatrixIndexOutOfBounds");
+      }
+    });
+    it("remove column from example matrices", () => {
+      const A = Matrix.from2dArray([
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9]
+      ]);
+      const B = Matrix.from2dArray([
+        [1, 3],
+        [4, 6],
+        [7, 9]
+      ]);
+      expect(A.copy.removeColumn(1).equals(B)).to.be.true;
+    });
+    it("remove last column", () => {
+      for (let i = 0; i < 1000; i++) {
+        let i = randInt([1, 10]);
+        let j = randInt([1, 10]);
+        const A = Matrix.randFloat(i, j, [-5, 5]);
+        expect(A.copy.removeColumn(j - 1).equals(A.copy.removeLastColumn())).to.be.true
+      }
+    });
+  });
+
   describe("square matrix", () => {
     it("square matrix test", () => {
       const A = Matrix.zeros(5, 5);
@@ -61,6 +130,9 @@ describe("Matrix Test", () => {
       // Remove column makes it squared again
       A.removeColumn(2);
       expect(A.isSquare).to.be.true;
+
+      // Empty matrix is square
+      expect(Matrix.empty.isSquare).to.be.true
     });
     it("square matrix random tests", () => {
       for (let _ = 0; _ < 1000; _++) {
@@ -152,12 +224,12 @@ describe("Matrix Test", () => {
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
 
-        expect(A.get.bind(-1, -1)).to.throw;
-        expect(A.get.bind(-1, 0)).to.throw;
-        expect(A.get.bind(0, -1)).to.throw;
-        expect(A.get.bind(i, j)).to.throw;
-        expect(A.get.bind(i, 0)).to.throw;
-        expect(A.get.bind(0, j)).to.throw;
+        expect(A.get.bind(A, -1, -1)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.get.bind(A, -1, 0)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.get.bind(A, 0, -1)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.get.bind(A, i, j)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.get.bind(A, i, 0)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.get.bind(A, 0, j)).to.throw("MatrixIndexOutOfBounds");
       }
     });
     it("get value in matrix random tests", () => {
@@ -183,12 +255,12 @@ describe("Matrix Test", () => {
         let j = randInt([1, 10]);
         const A = Matrix.randFloat(i, j, [-5, 5]);
 
-        expect(A.set.bind(-1, -1, 0, false)).to.throw;
-        expect(A.set.bind(-1, 0, 0, false)).to.throw;
-        expect(A.set.bind(0, -1, 0, false)).to.throw;
-        expect(A.set.bind(i, j, 0, false)).to.throw;
-        expect(A.set.bind(i, 0, 0, false)).to.throw;
-        expect(A.set.bind(0, j, 0, false)).to.throw;
+        expect(A.set.bind(A, -1, -1, 0, false)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.set.bind(A, -1, 0, 0, false)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.set.bind(A, 0, -1, 0, false)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.set.bind(A, i, j, 0, false)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.set.bind(A, i, 0, 0, false)).to.throw("MatrixIndexOutOfBounds");
+        expect(A.set.bind(A, 0, j, 0, false)).to.throw("MatrixIndexOutOfBounds");
       }
     });
     it("set value in matrix random tests", () => {
@@ -291,7 +363,7 @@ describe("Matrix Test", () => {
         const B = Matrix.randFloat(i, j, [-5, 5]);
         const C = Matrix.randFloat(j, i, [-5, 5]);
 
-        if (i !== j) expect(A.copy.mul.bind(B)).to.throw;
+        if (i !== j) expect(A.copy.mul.bind(A, B)).to.throw("MatrixIndexOutOfBounds");
         else expect(A.copy.mul(B).isSquare).to.be.true;
 
         expect(A.copy.mul(C).rows).to.be.eq(A.rows);
@@ -315,15 +387,15 @@ describe("Matrix Test", () => {
         let j = randInt([2, 10]);
         const A = Matrix.randFloat(10, j, [-5, 5]);
         const B = Matrix.randFloat(10, j, [-5, 5]);
-        expect(Matrix.dotProduct.bind(A, B)).to.throw;
+        expect(Matrix.dotProduct.bind(null, A, B)).to.throw("Matrix has to be a column vector for dot multiplication");
       }
     });
-    it("column vecotors of different length", () => {
+    it("column vectors of different length", () => {
       for (let _ = 0; _ < 1000; _++) {
         let i = randInt([2, 10]);
         const A = Matrix.randFloat(i, 1, [-5, 5]);
         const B = Matrix.randFloat(i + 1, 1, [-5, 5]);
-        expect(Matrix.dotProduct.bind(A, B)).to.throw;
+        expect(Matrix.dotProduct.bind(null, A, B)).to.throw("Sizes of both vectors needs to be equal");
       }
     })
     it("orthogonal vectors", () => {
@@ -342,6 +414,15 @@ describe("Matrix Test", () => {
   });
 
   describe("topological sorting", () => {
+    it("non square matrices random tests", () => {
+      for (let _ = 0; _ < 1000; _++) {
+        let i = randInt([5, 10]);
+        let j = randInt([5, 10]);
+        if (i === j) j++; // guarantee non square matrix
+        const A = Matrix.randFloat(i, j);
+        expect(A.getTopologicalSort.bind(A)).to.throw("Topological sort only for square matrices possible")
+      }
+    });
     it("topological sorting cycle graph", () => {
       const graph = new Matrix(4, 4);
       graph.set(0, 1, 1);
@@ -349,7 +430,7 @@ describe("Matrix Test", () => {
       graph.set(2, 1, 1);
       graph.set(2, 3, 1);
       graph.set(3, 2, 1);
-      expect(graph.getTopologicalSort).to.throw
+      expect(graph.getTopologicalSort.bind(graph)).to.throw("There is a cycle in the matrix.")
     });
     it("topological sort non cycle graph", () => {
       const graph = new Matrix(6, 6);
@@ -434,6 +515,7 @@ describe("Matrix Test", () => {
         expect(matrix.getColumnArray(0)).to.be.eql([a, d, g]);
         expect(matrix.getColumnArray(1)).to.be.eql([b, e, h]);
         expect(matrix.getColumnArray(2)).to.be.eql([c, f, i]);
+        expect(matrix.getColumnArray.bind(matrix, 3)).to.throw("MatrixIndexOutOfBounds");
       }
     });
   });
@@ -460,6 +542,46 @@ describe("Matrix Test", () => {
         expect(matrix.getColumnVector(0)).to.be.eql(Matrix.from2dArray([[a], [d], [g]]));
         expect(matrix.getColumnVector(1)).to.be.eql(Matrix.from2dArray([[b], [e], [h]]));
         expect(matrix.getColumnVector(2)).to.be.eql(Matrix.from2dArray([[c], [f], [i]]));
+        expect(matrix.getColumnVector.bind(matrix, 3)).to.throw("MatrixIndexOutOfBounds");
+      }
+    });
+  });
+  describe('set row', () => {
+    it("outside of matrix", () => {
+      for (let _ = 0; _ < 1000; _++) {
+        let i = randInt([5, 10]);
+        let j = randInt([5, 10]);
+        const A = Matrix.randFloat(i, j);
+        expect(A.setRow.bind(A, i)).to.throw("MatrixIndexOutOfBounds");
+      }
+    });
+    it("set row to scalar", () => {
+      for (let _ = 0; _ < 1000; _++) {
+        let i = randInt([5, 10]);
+        let j = randInt([5, 10]);
+        const A = Matrix.randFloat(i, j);
+        const scalar = randFloat([-10, 10]);
+        A.setRow(3, scalar);
+        expect(A.getRow(3)).to.be.eql(Array(j).fill(scalar));
+      }
+    });
+    it("set row to array", () => {
+      for (let _ = 0; _ < 1000; _++) {
+        let i = randInt([5, 10]);
+        let j = randInt([5, 10]);
+        const A = Matrix.randFloat(i, j);
+        const array = Array(j).map(() => randFloat([-10, 10]));
+        A.setRow(3, array);
+        expect(A.getRow(3)).to.be.eql(array);
+      }
+    });
+    it("set row to array with different size", () => {
+      for (let _ = 0; _ < 1000; _++) {
+        let i = randInt([5, 10]);
+        let j = randInt([5, 10]);
+        const A = Matrix.randFloat(i, j);
+        const array = Array(j + 1).map(() => randFloat([-10, 10]));
+        expect(A.setRow.bind(A, 3, array)).to.throw("MatrixIndexOutOfBounds")
       }
     });
   });
