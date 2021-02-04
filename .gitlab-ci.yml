@@ -16,6 +16,8 @@ stages:
 test:
   stage: test
   <<: *rules-default-and-merge-train
+  variables:
+    LOG_LEVEL: ERROR
   script:
     - npm test
 

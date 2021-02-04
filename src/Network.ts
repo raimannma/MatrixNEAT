@@ -2,8 +2,12 @@ import {Matrix, MatrixJSON} from "./utils/Matrix";
 import {fastIsNaN, pickRandom, randFloat} from "./utils/Utils";
 import {ActivationType, Identitiy} from "activations";
 import {MSELoss} from "./utils/Loss";
+import {Logger} from "sitka";
 
 export class Network {
+  private readonly logger: Logger = Logger.getLogger({
+    name: this.constructor.name,
+  });
   private static readonly WEIGHT_BOUNDS: [number, number] = [-1, 1];
   private static readonly BIAS_BOUNDS: [number, number] = [-1, 1];
   adjacency: Matrix;
@@ -16,6 +20,7 @@ export class Network {
   readonly options: NetworkOptions;
 
   constructor(options: NetworkOptions) {
+    this.logger.debug("Creating network...")
     // Apply default options to options parameter
     this.options = Object.assign({}, DefaultNetworkOptions, options);
 
@@ -33,6 +38,7 @@ export class Network {
     for (let i = 0; i < this.numInputs; i++) biases.push(0);
     for (let i = 0; i < this.numOutputs; i++) biases.push(this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
     this.nodes = Matrix.fromVerticalVector(biases);
+    this.logger.debug(`Created network with input size ${this.numInputs} and output size ${this.numOutputs}.`)
   }
 
   get connections(): [number, number][] {
@@ -83,6 +89,7 @@ export class Network {
   }
 
   forward(inputs: number[]) {
+    this.logger.debug("Forward through network...")
     if (inputs.length !== this.numInputs) throw new RangeError("Input dimensions doesn't match net dimensions.");
 
     // get topological order, filter out input nodes
@@ -121,6 +128,7 @@ export class Network {
   }
 
   mutateModWeight(): void {
+    this.logger.debug("Mutating mod weight...")
     if (this.connections.length === 0) return;
 
     const randomConnection = pickRandom(this.connections);
@@ -128,6 +136,7 @@ export class Network {
   }
 
   mutateAddConnection(): void {
+    this.logger.debug("Mutating add connection...")
     let sortedNodes = this.adjacency.getTopologicalSort();
 
     let possible = [];
@@ -150,6 +159,7 @@ export class Network {
   }
 
   mutateAddNode(): void {
+    this.logger.debug("Mutating add node...")
     const possible = this.connections
 
     if (possible.length === 0) return;
@@ -178,6 +188,7 @@ export class Network {
     addConnection: 0.4,
     modWeight: 0.6
   }) {
+    this.logger.debug("Mutating...")
     if (Math.random() <= distribution.addNode) this.mutateAddNode();
     if (Math.random() <= distribution.addConnection) this.mutateAddConnection();
     if (Math.random() <= distribution.modWeight) this.mutateModWeight();
