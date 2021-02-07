@@ -1,5 +1,5 @@
-import {Network, NetworkOptions} from "./Network";
-import {Logger} from "sitka";
+import { Network, NetworkOptions } from "./Network";
+import { Logger } from "sitka";
 
 export class Population {
   private readonly logger: Logger = Logger.getLogger({
@@ -12,10 +12,18 @@ export class Population {
   private readonly netOptions: NetworkOptions;
   private options: PopulationOptions;
 
-  constructor(size: number, netOptions: NetworkOptions, populationOptions: PopulationOptions) {
-    this.logger.debug("Creating population...")
+  constructor(
+    size: number,
+    netOptions: NetworkOptions,
+    populationOptions: PopulationOptions
+  ) {
+    this.logger.debug("Creating population...");
     // Apply default options to options parameter
-    this.options = Object.assign({}, DefaultPopulationOptions, populationOptions);
+    this.options = Object.assign(
+      {},
+      DefaultPopulationOptions,
+      populationOptions
+    );
 
     this.populationSize = size;
     this.netOptions = netOptions;
@@ -24,7 +32,7 @@ export class Population {
     for (let i = 0; i < this.populationSize; i++) {
       this.networks[i] = new Network(netOptions);
     }
-    this.logger.debug(`Created population with ${this.size} networks.`)
+    this.logger.debug(`Created population with ${this.size} networks.`);
   }
 
   get size(): number {
@@ -39,9 +47,12 @@ export class Population {
     this.networks.sort((a, b) => b.fitness - a.fitness); // sort descending
 
     this.logger.debug("Reproducing networks...");
-    this.networks = this.networks.filter((network, index) => network.stagnation < this.MAX_STAGNATION || index < this.elitists);
+    this.networks = this.networks.filter(
+      (network, index) =>
+        network.stagnation < this.MAX_STAGNATION || index < this.elitists
+    );
     while (this.networks.length < this.populationSize) {
-      this.networks.push(new Network(this.netOptions))
+      this.networks.push(new Network(this.netOptions));
     }
     this.logger.debug("Reproduced networks.");
 
@@ -55,7 +66,7 @@ export class Population {
   }
 
   evaluateFitness(inputs: number[][], targets: number[][]) {
-    this.networks.forEach(network => network.evaluate(inputs, targets));
+    this.networks.forEach((network) => network.evaluate(inputs, targets));
   }
 }
 
@@ -64,5 +75,5 @@ export interface PopulationOptions {
 }
 
 const DefaultPopulationOptions: Partial<PopulationOptions> = {
-  elitists: 2
-}
+  elitists: 2,
+};
