@@ -1,4 +1,4 @@
-import {fastIsNaN, isNumber, randFloat, randInt, transposeArray} from "./Utils";
+import { fastIsNaN, randFloat, randInt, transposeArray } from "./Utils";
 
 export class Matrix {
   private data: number[][];
@@ -31,7 +31,9 @@ export class Matrix {
   }
 
   get isSquare(): boolean {
-    return this.data.length !== 0 ? this.data.length === this.data[0].length : true;
+    return this.data.length !== 0
+      ? this.data.length === this.data[0].length
+      : true;
   }
 
   get isSymmetric(): boolean {
@@ -56,11 +58,11 @@ export class Matrix {
   }
 
   get json(): MatrixJSON {
-    return {data: this.data};
+    return { data: this.data };
   }
 
   get emptyColumns() {
-    let out = [];
+    const out = [];
     for (let i = 0; i < this.columns; i++) {
       if (this.isEmptyColumn(i)) out.push(i);
     }
@@ -79,7 +81,7 @@ export class Matrix {
     return new Matrix(rows, columns).fill(1);
   }
 
-  static eye(rows: number, columns: number = rows, value: number = 1): Matrix {
+  static eye(rows: number, columns: number = rows, value = 1): Matrix {
     const out = this.zeros(rows, columns);
     for (let i = 0; i < Math.min(out.rows, out.columns); i++) {
       out.set(i, i, value);
@@ -87,12 +89,20 @@ export class Matrix {
     return out;
   }
 
-  static randFloat(rows: number, columns: number = rows, bounds: [number, number] = [0, 1]): Matrix {
-    return new Matrix(rows, columns).map(_ => randFloat(bounds));
+  static randFloat(
+    rows: number,
+    columns: number = rows,
+    bounds: [number, number] = [0, 1]
+  ): Matrix {
+    return new Matrix(rows, columns).map(() => randFloat(bounds));
   }
 
-  static randInt(rows: number, columns: number = rows, bounds: [number, number] = [-1, 1]): Matrix {
-    return new Matrix(rows, columns).map(_ => randInt(bounds));
+  static randInt(
+    rows: number,
+    columns: number = rows,
+    bounds: [number, number] = [-1, 1]
+  ): Matrix {
+    return new Matrix(rows, columns).map(() => randInt(bounds));
   }
 
   static from2dArray(arr: number[][]): Matrix {
@@ -104,21 +114,28 @@ export class Matrix {
   }
 
   static dotProduct(A: Matrix, B: Matrix): number {
-    if (!A.isColumnVector || !B.isColumnVector) throw new RangeError("Matrix has to be a column vector for dot multiplication");
-    if (A.rows !== B.rows) throw new RangeError("Sizes of both vectors needs to be equal");
+    if (!A.isColumnVector || !B.isColumnVector)
+      throw new RangeError(
+        "Matrix has to be a column vector for dot multiplication"
+      );
+    if (A.rows !== B.rows)
+      throw new RangeError("Sizes of both vectors needs to be equal");
 
     return A.copy.transpose().mul(B).get(0, 0);
   }
 
   getTopologicalSort(): number[] {
-    if (!this.isSquare) throw new RangeError("Topological sort only for square matrices possible");
+    if (!this.isSquare)
+      throw new RangeError(
+        "Topological sort only for square matrices possible"
+      );
 
     const copy = this.copy;
     const sortedList = [];
     const emptyColumns = copy.emptyColumns;
 
     while (emptyColumns.length !== 0) {
-      let i = emptyColumns.splice(0, 1)[0]; // remove first node without incoming edges
+      const i = emptyColumns.splice(0, 1)[0]; // remove first node without incoming edges
       sortedList.push(i); // add it to the sorted list
 
       for (let j = 0; j < copy.data[i].length; j++) {
@@ -128,16 +145,18 @@ export class Matrix {
         if (copy.isEmptyColumn(j)) emptyColumns.push(j);
       }
     }
-    if (copy.emptyColumns.length !== copy.columns) throw new ReferenceError("There is a cycle in the matrix.");
+    if (copy.emptyColumns.length !== copy.columns)
+      throw new ReferenceError("There is a cycle in the matrix.");
     return sortedList;
   }
 
   mul(other: Matrix | number): Matrix {
     // scalar multiplication
-    if (isNumber(other)) return this.map(element => element * (other as number));
+    if (typeof other == "number")
+      return this.map((element) => element * (other as number));
 
     // Matrix multiplication
-    const B = other as Matrix
+    const B = other as Matrix;
     if (this.columns !== B.rows) throw new RangeError("MatrixIndexOutOfBounds");
 
     const result = Matrix.zeros(this.rows, B.columns);
@@ -146,9 +165,9 @@ export class Matrix {
       for (let j = 0; j < B.columns; j++) {
         let sum = 0;
         for (let k = 0; k < this.columns; k++) {
-          let factor1 = this.get(i, k);
-          let factor2 = B.get(k, j);
-          if (fastIsNaN(factor1) || fastIsNaN(factor2)) continue
+          const factor1 = this.get(i, k);
+          const factor2 = B.get(k, j);
+          if (fastIsNaN(factor1) || fastIsNaN(factor2)) continue;
           sum += this.get(i, k) * B.get(k, j);
         }
         result.set(i, j, sum);
@@ -160,18 +179,23 @@ export class Matrix {
   }
 
   get(rowIndex: number, columnIndex: number): number {
-    if (!this.checkRowIndex(rowIndex) || !this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkRowIndex(rowIndex) || !this.checkColumnIndex(columnIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     return this.data[rowIndex][columnIndex];
   }
 
-  set(rowIndex: number, columnIndex: number, value: number, mirror: boolean = false): Matrix {
-    if (!this.checkRowIndex(rowIndex) || !this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+  set(
+    rowIndex: number,
+    columnIndex: number,
+    value: number,
+    mirror = false
+  ): Matrix {
+    if (!this.checkRowIndex(rowIndex) || !this.checkColumnIndex(columnIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     this.data[rowIndex][columnIndex] = value;
-    return mirror
-      ? this.set(columnIndex, rowIndex, value, false)
-      : this;
+    return mirror ? this.set(columnIndex, rowIndex, value, false) : this;
   }
 
   checkRowIndex(index: number): boolean {
@@ -183,7 +207,7 @@ export class Matrix {
   }
 
   to2DArray(): number[][] {
-    return this.data.map(row => [...row]);
+    return this.data.map((row) => [...row]);
   }
 
   transpose(): Matrix {
@@ -193,19 +217,20 @@ export class Matrix {
 
   prettyPrint(): Matrix {
     console.log("--------------------");
-    console.log("Matrix:")
-    for (let row of this.data) {
+    console.log("Matrix:");
+    for (const row of this.data) {
       console.log(JSON.stringify(row));
     }
     return this;
   }
 
   fill(value: number): Matrix {
-    return this.map(_ => value);
+    return this.map(() => value);
   }
 
   removeRow(rowIndex: number): Matrix {
-    if (!this.checkRowIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkRowIndex(rowIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     this.data.splice(rowIndex, 1);
     return this;
@@ -216,9 +241,10 @@ export class Matrix {
   }
 
   removeColumn(columnIndex: number): Matrix {
-    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkColumnIndex(columnIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
-    for (let row of this.data) {
+    for (const row of this.data) {
       row.splice(columnIndex, 1);
     }
     return this;
@@ -241,9 +267,16 @@ export class Matrix {
     return this.addRowAtIndex(this.rows, value);
   }
 
-  addColumnAtIndex(columnIndex: number, value: number[] | number = NaN): Matrix {
+  addColumnAtIndex(
+    columnIndex: number,
+    value: number[] | number = NaN
+  ): Matrix {
     for (let i = 0; i < this.data.length; i++) {
-      this.data[i].splice(columnIndex, 0, Array.isArray(value) ? value[i] : value);
+      this.data[i].splice(
+        columnIndex,
+        0,
+        Array.isArray(value) ? value[i] : value
+      );
     }
     return this;
   }
@@ -256,7 +289,14 @@ export class Matrix {
     return this.addRowAtEnd(value).addColumnAtEnd(value);
   }
 
-  map(callback: (element: number, row: number, column: number, matrix: Matrix) => number): Matrix {
+  map(
+    callback: (
+      element: number,
+      row: number,
+      column: number,
+      matrix: Matrix
+    ) => number
+  ): Matrix {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
         this.set(i, j, callback(this.get(i, j), i, j, this));
@@ -265,7 +305,14 @@ export class Matrix {
     return this;
   }
 
-  forEach(callback: (element: number, row: number, column: number, matrix: Matrix) => void) {
+  forEach(
+    callback: (
+      element: number,
+      row: number,
+      column: number,
+      matrix: Matrix
+    ) => void
+  ) {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
         callback(this.get(i, j), i, j, this);
@@ -274,7 +321,8 @@ export class Matrix {
   }
 
   equals(other: Matrix): boolean {
-    if (this.rows !== other.rows || this.columns !== other.columns) return false;
+    if (this.rows !== other.rows || this.columns !== other.columns)
+      return false;
 
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
@@ -287,7 +335,8 @@ export class Matrix {
   }
 
   getColumnArray(columnIndex: number): number[] {
-    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkColumnIndex(columnIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     const out = [];
     for (let i = 0; i < this.rows; i++) {
@@ -297,19 +346,22 @@ export class Matrix {
   }
 
   getColumnVector(columnIndex: number): Matrix {
-    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkColumnIndex(columnIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     return Matrix.fromVerticalVector(this.getColumnArray(columnIndex));
   }
 
   getRow(rowIndex: number): number[] {
-    if (!this.checkColumnIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkColumnIndex(rowIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     return [...this.data[rowIndex]];
   }
 
   isEmptyColumn(columnIndex: number): boolean {
-    if (!this.checkColumnIndex(columnIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkColumnIndex(columnIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
 
     for (let i = 0; i < this.rows; i++) {
       if (!fastIsNaN(this.data[i][columnIndex])) return false;
@@ -318,10 +370,12 @@ export class Matrix {
   }
 
   setRow(rowIndex: number, value: number | number[] = NaN) {
-    if (!this.checkRowIndex(rowIndex)) throw new RangeError("MatrixIndexOutOfBounds");
+    if (!this.checkRowIndex(rowIndex))
+      throw new RangeError("MatrixIndexOutOfBounds");
     if (Array.isArray(value)) {
-      if (value.length !== this.columns) throw new RangeError("MatrixIndexOutOfBounds");
-      this.data[rowIndex] = value
+      if (value.length !== this.columns)
+        throw new RangeError("MatrixIndexOutOfBounds");
+      this.data[rowIndex] = value;
     } else {
       this.data[rowIndex] = new Array(this.columns).fill(value);
     }

@@ -3,17 +3,13 @@ export function randFloat(bounds: [number, number]): number {
 }
 
 export function randInt(bounds: [number, number]): number {
-  let min = Math.ceil(bounds[0]);
-  let max = Math.floor(bounds[1]);
+  const min = Math.ceil(bounds[0]);
+  const max = Math.floor(bounds[1]);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export function transposeArray(arr: number[][]): number[][] {
-  return arr[0].map((col, i) => arr.map(row => row[i]));
-}
-
-export function isNumber(n: any) {
-  return !fastIsNaN(parseFloat(n)) && !fastIsNaN(n - 0)
+  return arr[0].map((col, i) => arr.map((row) => row[i]));
 }
 
 export function pickRandom<T>(arr: T[]): T {
@@ -27,7 +23,7 @@ export function sum(array: number[]): number {
 }
 
 export function cantorPair(a: number, b: number): number {
-  return Math.round(b + (a + b) * (a + b + 1) / 2); // round to avoid float values
+  return Math.round(b + ((a + b) * (a + b + 1)) / 2); // round to avoid float values
 }
 
 export function fastIsNaN(a: number) {

@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import {Network} from "../Network";
+import { Network } from "../Network";
 import * as opn from "opn";
 import * as os from "os";
 import * as path from "path";
@@ -14,7 +14,9 @@ export class Visualizer {
     fs.mkdirSync(directory);
     this.directory = directory;
 
-    fs.writeFileSync(`${this.directory}/index.html`, `
+    fs.writeFileSync(
+      `${this.directory}/index.html`,
+      `
       <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -28,7 +30,8 @@ export class Visualizer {
           <script src="script.js" type="text/javascript"></script>
         </body>
       </html>
-    `);
+    `
+    );
     opn(`${this.directory}/index.html`);
   }
 
@@ -36,15 +39,18 @@ export class Visualizer {
     const adjacency = network.adjacency;
     const nodes = [];
     for (let i = 0; i < adjacency.rows; i++) {
-      if (network.isInputNode(i)) nodes.push({id: i, label: i, color: "red"});
-      else if (network.isOutputNode(i)) nodes.push({id: i, label: i, color: "green"});
-      else nodes.push({id: i, label: i, color: "blue"});
+      if (network.isInputNode(i)) nodes.push({ id: i, label: i, color: "red" });
+      else if (network.isOutputNode(i))
+        nodes.push({ id: i, label: i, color: "green" });
+      else nodes.push({ id: i, label: i, color: "blue" });
     }
     const conns = [];
-    adjacency.forEach(((element, row, column) => {
-      if (element !== 0) conns.push({from: row, to: column});
-    }));
-    fs.writeFileSync(`${this.directory}/script.js`, `
+    adjacency.forEach((element, row, column) => {
+      if (element !== 0) conns.push({ from: row, to: column });
+    });
+    fs.writeFileSync(
+      `${this.directory}/script.js`,
+      `
       const nodes = new vis.DataSet(${JSON.stringify(nodes)});
       const edges = new vis.DataSet(${JSON.stringify(conns)});
       const options = {
@@ -66,6 +72,7 @@ export class Visualizer {
         physics: true
       };
       new vis.Network(document.getElementById("network"), {nodes: nodes, edges: edges}, options);
-    `);
+    `
+    );
   }
 }

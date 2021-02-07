@@ -1,8 +1,8 @@
-import {Matrix, MatrixJSON} from "./utils/Matrix";
-import {fastIsNaN, pickRandom, randFloat} from "./utils/Utils";
-import {ActivationType, Identitiy} from "activations";
-import {MSELoss} from "./utils/Loss";
-import {Logger} from "sitka";
+import { Matrix, MatrixJSON } from "./utils/Matrix";
+import { fastIsNaN, pickRandom, randFloat } from "./utils/Utils";
+import { ActivationType, Identitiy } from "activations";
+import { MSELoss } from "./utils/Loss";
+import { Logger } from "sitka";
 
 export class Network {
   private readonly logger: Logger = Logger.getLogger({
@@ -20,7 +20,7 @@ export class Network {
   readonly options: NetworkOptions;
 
   constructor(options: NetworkOptions) {
-    this.logger.debug("Creating network...")
+    this.logger.debug("Creating network...");
     // Apply default options to options parameter
     this.options = Object.assign({}, DefaultNetworkOptions, options);
 
@@ -34,27 +34,36 @@ export class Network {
     this.adjacency = new Matrix(this.numInputs + this.numOutputs);
 
     // Create bias matrix (vector)
-    let biases = [];
+    const biases = [];
     for (let i = 0; i < this.numInputs; i++) biases.push(0);
-    for (let i = 0; i < this.numOutputs; i++) biases.push(this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
+    for (let i = 0; i < this.numOutputs; i++)
+      biases.push(this.options.randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
     this.nodes = Matrix.fromVerticalVector(biases);
-    this.logger.debug(`Created network with input size ${this.numInputs} and output size ${this.numOutputs}.`)
+    this.logger.debug(
+      `Created network with input size ${this.numInputs} and output size ${this.numOutputs}.`
+    );
   }
 
   get connections(): [number, number][] {
-    let connections = [];
-    this.adjacency.forEach(((element, row, column) => {
+    const connections = [];
+    this.adjacency.forEach((element, row, column) => {
       if (!fastIsNaN(element)) connections.push([row, column]);
-    }));
+    });
     return connections;
   }
 
   get inputNodes(): number[] {
-    return this.nodes.getColumnArray(0).map((value, index) => index).filter(nodeIndex => this.isInputNode(nodeIndex));
+    return this.nodes
+      .getColumnArray(0)
+      .map((value, index) => index)
+      .filter((nodeIndex) => this.isInputNode(nodeIndex));
   }
 
   get outputNodes(): number[] {
-    return this.nodes.getColumnArray(0).map((value, index) => index).filter(nodeIndex => this.isOutputNode(nodeIndex));
+    return this.nodes
+      .getColumnArray(0)
+      .map((value, index) => index)
+      .filter((nodeIndex) => this.isOutputNode(nodeIndex));
   }
 
   get copy(): Network {
@@ -76,37 +85,46 @@ export class Network {
     return out;
   }
 
-  addNode(randomBias: boolean = false): number {
+  addNode(randomBias = false): number {
     this.nodes.addRowAtEnd(randomBias ? randFloat(Network.BIAS_BOUNDS) : 1);
     this.adjacency.addRowAndColumnAtEnd();
     return this.adjacency.rows - 1;
   }
 
-  addConnection(index1: number, index2: number, weight: number = randFloat(Network.WEIGHT_BOUNDS)) {
-    if (index2 < this.numInputs) throw new ReferenceError("Can't connect to input node!");
+  addConnection(
+    index1: number,
+    index2: number,
+    weight: number = randFloat(Network.WEIGHT_BOUNDS)
+  ) {
+    if (index2 < this.numInputs)
+      throw new ReferenceError("Can't connect to input node!");
 
     this.adjacency.set(index1, index2, weight);
   }
 
   forward(inputs: number[]) {
-    this.logger.debug("Forward through network...")
-    if (inputs.length !== this.numInputs) throw new RangeError("Input dimensions doesn't match net dimensions.");
+    this.logger.debug("Forward through network...");
+    if (inputs.length !== this.numInputs)
+      throw new RangeError("Input dimensions doesn't match net dimensions.");
 
     // get topological order, filter out input nodes
-    const orderOfActivation = this.adjacency.getTopologicalSort().filter(nodeIndex => !this.isInputNode(nodeIndex));
+    const orderOfActivation = this.adjacency
+      .getTopologicalSort()
+      .filter((nodeIndex) => !this.isInputNode(nodeIndex));
 
     // prepare for output values of each node
     const outputColumn = this.nodes.columns;
     this.nodes.addColumnAtEnd();
 
     // Set inputs
-    for (let nodeIndex of this.inputNodes) this.nodes.set(nodeIndex, outputColumn, inputs[nodeIndex]);
+    for (const nodeIndex of this.inputNodes)
+      this.nodes.set(nodeIndex, outputColumn, inputs[nodeIndex]);
 
     // propagate
-    orderOfActivation.forEach(node => {
+    orderOfActivation.forEach((node) => {
       // Sum up input[i] * weights[i]
-      let weights = this.adjacency.getColumnVector(node)
-      let inputs = this.nodes.getColumnVector(outputColumn);
+      const weights = this.adjacency.getColumnVector(node);
+      const inputs = this.nodes.getColumnVector(outputColumn);
 
       let result = Matrix.dotProduct(weights, inputs);
 
@@ -124,26 +142,37 @@ export class Network {
     const outputs = this.nodes.getColumnArray(outputColumn);
     // Clear nodes matrix
     this.nodes.removeColumn(outputColumn);
-    return this.outputNodes.map(nodeIndex => outputs[nodeIndex]);
+    return this.outputNodes.map((nodeIndex) => outputs[nodeIndex]);
   }
 
   mutateModWeight(): void {
-    this.logger.debug("Mutating mod weight...")
+    this.logger.debug("Mutating mod weight...");
     if (this.connections.length === 0) return;
 
     const randomConnection = pickRandom(this.connections);
-    this.adjacency.set(randomConnection[0], randomConnection[1], randFloat(Network.WEIGHT_BOUNDS))
+    this.adjacency.set(
+      randomConnection[0],
+      randomConnection[1],
+      randFloat(Network.WEIGHT_BOUNDS)
+    );
   }
 
   mutateAddConnection(): void {
-    this.logger.debug("Mutating add connection...")
-    let sortedNodes = this.adjacency.getTopologicalSort();
+    this.logger.debug("Mutating add connection...");
+    const sortedNodes = this.adjacency.getTopologicalSort();
 
-    let possible = [];
+    const possible = [];
     // Get all possible node pairs that don't have a connection and are forward pointing
     for (let fromIndex = 0; fromIndex < sortedNodes.length - 1; fromIndex++) {
-      for (let toIndex = fromIndex + 1; toIndex < sortedNodes.length; toIndex++) {
-        const [fromNodeIndex, toNodeIndex] = [sortedNodes[fromIndex], sortedNodes[toIndex]];
+      for (
+        let toIndex = fromIndex + 1;
+        toIndex < sortedNodes.length;
+        toIndex++
+      ) {
+        const [fromNodeIndex, toNodeIndex] = [
+          sortedNodes[fromIndex],
+          sortedNodes[toIndex],
+        ];
         if (this.isOutputNode(fromNodeIndex)) continue;
         if (this.isInputNode(toNodeIndex)) continue;
         if (!fastIsNaN(this.getWeight(fromNodeIndex, toNodeIndex))) continue;
@@ -155,22 +184,34 @@ export class Network {
     if (possible.length === 0) return;
 
     const randomNodePair = pickRandom(possible);
-    this.addConnection(randomNodePair[0], randomNodePair[1], randFloat(Network.WEIGHT_BOUNDS))
+    this.addConnection(
+      randomNodePair[0],
+      randomNodePair[1],
+      randFloat(Network.WEIGHT_BOUNDS)
+    );
   }
 
   mutateAddNode(): void {
-    this.logger.debug("Mutating add node...")
-    const possible = this.connections
+    this.logger.debug("Mutating add node...");
+    const possible = this.connections;
 
     if (possible.length === 0) return;
 
     const randomConnection = pickRandom(possible);
     const newNode = this.addNode();
     this.addConnection(randomConnection[0], newNode, 1);
-    this.addConnection(newNode, randomConnection[1], this.adjacency.get(randomConnection[0], randomConnection[1]));
+    this.addConnection(
+      newNode,
+      randomConnection[1],
+      this.adjacency.get(randomConnection[0], randomConnection[1])
+    );
   }
 
-  evaluate(inputs: number[][], targets: number[][], loss: (output: number[], target: number[]) => number = MSELoss) {
+  evaluate(
+    inputs: number[][],
+    targets: number[][],
+    loss: (output: number[], target: number[]) => number = MSELoss
+  ) {
     let error = 0;
     for (let i = 0; i < inputs.length; i++) {
       error -= loss(this.forward(inputs[i]), targets[i]);
@@ -183,12 +224,18 @@ export class Network {
     this.fitness = error;
   }
 
-  mutate(distribution: { addNode: number, addConnection: number, modWeight: number } = {
-    addNode: 0.6,
-    addConnection: 0.4,
-    modWeight: 0.6
-  }) {
-    this.logger.debug("Mutating...")
+  mutate(
+    distribution: {
+      addNode: number;
+      addConnection: number;
+      modWeight: number;
+    } = {
+      addNode: 0.6,
+      addConnection: 0.4,
+      modWeight: 0.6,
+    }
+  ) {
+    this.logger.debug("Mutating...");
     if (Math.random() <= distribution.addNode) this.mutateAddNode();
     if (Math.random() <= distribution.addConnection) this.mutateAddConnection();
     if (Math.random() <= distribution.modWeight) this.mutateModWeight();
@@ -222,5 +269,5 @@ export interface NetworkOptions {
 
 const DefaultNetworkOptions: Partial<NetworkOptions> = {
   randomBias: false,
-  activation: Identitiy
-}
+  activation: Identitiy,
+};
