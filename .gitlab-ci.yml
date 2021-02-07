@@ -20,3 +20,9 @@ test:
     LOG_LEVEL: ERROR
   script:
     - npm test
+
+lint:
+  stage: test
+  <<: *rules-default-and-merge-train
+  script:
+    - npm run lint:check

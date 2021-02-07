@@ -9,7 +9,8 @@
     "html-coverage": "nyc report --reporter html",
     "text-coverage": "nyc report --reporter text",
     "test": "nyc --reporter text mocha --require ts-node/register test/**/*.ts test/*.ts",
-    "lint": "eslint . --fix && prettier --write src && prettier --write test"
+    "lint": "eslint . --fix && prettier --write src && prettier --write test",
+    "lint:check": "eslint . && prettier --check src && prettier --check test"
   },
   "keywords": [],
   "author": "",
