@@ -26,3 +26,11 @@ lint:
   <<: *rules-default-and-merge-train
   script:
     - npm run lint:check
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+code_quality:
+  before_script: []
+  artifacts:
+    paths: [gl-code-quality-report.json]
