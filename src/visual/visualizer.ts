@@ -1,18 +1,31 @@
 import * as fs from "fs";
 import { Network } from "../Network";
-import * as opn from "opn";
 import * as os from "os";
 import * as path from "path";
 import UUID from "pure-uuid";
+import * as server from "simple-autoreload-server";
+import { fastIsNaN } from "../utils/Utils";
+import * as open from "open";
+
+type weightColors = "black" | "green" | "red";
 
 export class Visualizer {
-  private directory: string;
+  private readonly directory: string;
+  private readonly server;
 
   constructor() {
     const id = new UUID(4).format();
-    const directory = path.join(os.tmpdir(), id);
-    fs.mkdirSync(directory);
-    this.directory = directory;
+    this.directory = path.join(os.tmpdir(), id);
+    fs.mkdirSync(this.directory);
+
+    this.server = server({
+      port: 8008,
+      path: this.directory,
+      watch: "**/**.js",
+      reload: "**/**.js",
+      watchDelay: 0,
+    });
+    console.log("Visualizer started at: localhost:8008/index.html");
 
     fs.writeFileSync(
       `${this.directory}/index.html`,
@@ -22,7 +35,6 @@ export class Visualizer {
         <head>
           <meta charset="UTF-8">
           <title>Visualizer</title>
-          <meta content="1" http-equiv="refresh">
         </head>
         <body>
           <div id="network" style="height: 90vh; width: 90vw;"></div>
@@ -32,21 +44,38 @@ export class Visualizer {
       </html>
     `
     );
-    opn(`${this.directory}/index.html`);
+
+    // Opens the URL in the default browser.
+    open("http://localhost:8008/index.html");
   }
 
   update(network: Network) {
-    const adjacency = network.adjacency;
     const nodes = [];
-    for (let i = 0; i < adjacency.rows; i++) {
-      if (network.isInputNode(i)) nodes.push({ id: i, label: i, color: "red" });
-      else if (network.isOutputNode(i))
-        nodes.push({ id: i, label: i, color: "green" });
-      else nodes.push({ id: i, label: i, color: "blue" });
-    }
+    const topological: number[][] = network.adjacency.getTopologicalSort(false);
+    topological.forEach((set, level) =>
+      set.forEach((nodeIndex) => {
+        let color;
+        if (network.isInputNode(nodeIndex)) color = "red";
+        else if (network.isOutputNode(nodeIndex)) color = "green";
+        else color = "blue";
+
+        nodes.push({
+          id: nodeIndex,
+          label: nodeIndex,
+          level: level,
+          color: { background: color },
+        });
+      })
+    );
     const conns = [];
-    adjacency.forEach((element, row, column) => {
-      if (element !== 0) conns.push({ from: row, to: column });
+    network.adjacency.forEach((element, row, column) => {
+      if (!fastIsNaN(element)) {
+        conns.push({
+          from: row,
+          to: column,
+          color: weightColor(element),
+        });
+      }
     });
     fs.writeFileSync(
       `${this.directory}/script.js`,
@@ -58,15 +87,19 @@ export class Visualizer {
         height: "100%",
         width: "100%",
         edges: {
+          arrows: {
+             to: {enabled: true, scaleFactor:1, type:'arrow'}
+           },
           smooth: {
             type: "cubicBezier",
-            forceDirection: "vertical"
+            forceDirection: "horizontal"
           }
         },
         layout: {
           hierarchical: {
             direction: 'LR',
-            sortMethod: "directed"
+            sortMethod: "directed",
+            shakeTowards: "roots"
           }
         },
         physics: true
@@ -75,4 +108,10 @@ export class Visualizer {
     `
     );
   }
+}
+
+function weightColor(weight: number): weightColors {
+  if (weight == 1) return "black";
+  if (weight > 0) return "green";
+  return "red";
 }

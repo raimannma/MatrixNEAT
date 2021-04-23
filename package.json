@@ -19,8 +19,9 @@
     "activations": "^1.1.2",
     "chai": "^4.2.0",
     "mocha": "^8.2.1",
-    "opn": "^6.0.0",
+    "open": "^8.0.6",
     "pure-uuid": "^1.6.2",
+    "simple-autoreload-server": "^0.2.7",
     "sitka": "^1.0.5",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
