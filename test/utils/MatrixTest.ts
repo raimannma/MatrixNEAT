@@ -479,12 +479,7 @@ describe("Matrix Test", () => {
       graph.set(2, 5, 1);
       graph.set(4, 5, 1);
       graph.set(5, 3, 1);
-
-      const sort = graph.getTopologicalSort();
-      for (const node of sort) {
-        expect(graph.isEmptyColumn(node)).to.be.true;
-        graph.setRow(node);
-      }
+      expect(graph.getTopologicalSort()).to.be.eql([0, 1, 2, 4, 5, 3]);
 
       const graph2 = new Matrix(7, 7);
       graph2.set(0, 1, 1);
@@ -496,12 +491,20 @@ describe("Matrix Test", () => {
       graph2.set(3, 4, 1);
       graph2.set(4, 5, 1);
       graph2.set(6, 3, 1);
+      expect(graph2.getTopologicalSort()).to.be.eql([0, 6, 1, 2, 3, 4, 5]);
 
-      const sort2 = graph2.getTopologicalSort();
-      for (const node of sort2) {
-        expect(graph2.isEmptyColumn(node)).to.be.true;
-        graph2.setRow(node);
-      }
+      const graph3 = new Matrix(5, 5);
+      graph3.set(0, 1, 1);
+      graph3.set(0, 2, 1);
+      graph3.set(2, 3, 1);
+      graph3.set(2, 4, 1);
+
+      const sort = graph3.getTopologicalSort();
+      const parallel_sort = graph3.getTopologicalSort(false);
+
+      expect(parallel_sort.flat()).to.be.eql(sort);
+      expect(sort).to.be.eql([0, 1, 2, 3, 4]);
+      expect(parallel_sort).to.be.eql([[0], [1, 2], [3, 4]]);
     });
   });
   describe("get row", () => {
