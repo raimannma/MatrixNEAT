@@ -20,6 +20,9 @@ test:
     LOG_LEVEL: ERROR
   script:
     - npm test
+  artifacts:
+    reports:
+      cobertura: coverage/cobertura-coverage.xml
 
 lint:
   stage: test

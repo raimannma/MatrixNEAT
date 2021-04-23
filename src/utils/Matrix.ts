@@ -124,30 +124,33 @@ export class Matrix {
     return A.copy.transpose().mul(B).get(0, 0);
   }
 
-  getTopologicalSort(): number[] {
+  getTopologicalSort(flatten = true) {
     if (!this.isSquare)
       throw new RangeError(
         "Topological sort only for square matrices possible"
       );
 
     const copy = this.copy;
-    const sortedList = [];
-    const emptyColumns = copy.emptyColumns;
-
+    const processedColumns = new Set();
+    const result = [];
+    let emptyColumns = copy.emptyColumns;
     while (emptyColumns.length !== 0) {
-      const i = emptyColumns.splice(0, 1)[0]; // remove first node without incoming edges
-      sortedList.push(i); // add it to the sorted list
-
-      for (let j = 0; j < copy.data[i].length; j++) {
-        if (fastIsNaN(copy.data[i][j])) continue;
-
-        copy.data[i][j] = NaN;
-        if (copy.isEmptyColumn(j)) emptyColumns.push(j);
-      }
+      // Set all outgoing connections from this node to NaN
+      emptyColumns.forEach((column) => copy.setRow(column, NaN));
+      // Add empty columns to the result array
+      result.push(emptyColumns);
+      // Track already processed columns
+      emptyColumns.forEach(processedColumns.add, processedColumns);
+      // Get empty columns which aren't already processed
+      emptyColumns = copy.emptyColumns.filter(
+        (column) => !processedColumns.has(column)
+      );
     }
+
     if (copy.emptyColumns.length !== copy.columns)
       throw new ReferenceError("There is a cycle in the matrix.");
-    return sortedList;
+
+    return flatten ? result.flat() : result;
   }
 
   mul(other: Matrix | number): Matrix {
