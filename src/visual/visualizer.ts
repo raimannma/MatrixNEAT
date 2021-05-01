@@ -54,15 +54,22 @@ export class Visualizer {
     const topological: number[][] = network.adjacency.getTopologicalSort(false);
     topological.forEach((set, level) =>
       set.forEach((nodeIndex) => {
-        let color;
-        if (network.isInputNode(nodeIndex)) color = "red";
-        else if (network.isOutputNode(nodeIndex)) color = "green";
-        else color = "blue";
+        let color, displayLevel;
+        if (network.isInputNode(nodeIndex)) {
+          color = "red";
+          displayLevel = 0; // First level
+        } else if (network.isOutputNode(nodeIndex)) {
+          color = "green";
+          displayLevel = topological.length; // Last level
+        } else {
+          color = "blue";
+          displayLevel = level;
+        }
 
         nodes.push({
           id: nodeIndex,
           label: nodeIndex,
-          level: level,
+          level: displayLevel,
           color: { background: color },
         });
       })
